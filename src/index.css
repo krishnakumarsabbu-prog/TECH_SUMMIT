@@ -68,10 +68,26 @@ html, body {
   z-index: 100;
 }
 
+.ts-header__logo-wrap {
+  width: 100%;
+  height: 72px;
+  overflow: hidden;
+  background: var(--brand-red);
+  border-bottom: 4px solid #F7C948;
+}
+
+.ts-header__logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: left center;
+}
+
 .ts-header__inner {
   max-width: 640px;
   margin: 0 auto;
-  padding: 14px 20px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -701,6 +717,10 @@ html, body {
 
 /* ===== Responsive ===== */
 @media (max-width: 480px) {
+  .ts-header__logo-wrap {
+    height: 62px;
+  }
+
   .ts-layout {
     padding: 12px 10px 32px;
   }

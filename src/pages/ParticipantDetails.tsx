@@ -25,7 +25,9 @@ export function ParticipantDetails({ initialData, onContinue, onBack }: Particip
     const e: FormErrors = {};
     if (!name.trim()) e.name = 'Full name is required.';
     if (!company.trim()) e.company = 'Company or organization is required.';
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!email.trim()) {
+      e.email = 'Email address is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       e.email = 'Please enter a valid email address.';
     }
     setErrors(e);
@@ -93,7 +95,7 @@ export function ParticipantDetails({ initialData, onContinue, onBack }: Particip
           </div>
 
           <div className="ts-field">
-            <label htmlFor="email" className="ts-field__label">Email <span className="ts-field__optional">(optional)</span></label>
+            <label htmlFor="email" className="ts-field__label">Email <span className="ts-field__required">*</span></label>
             <input
               id="email"
               type="email"
@@ -101,6 +103,7 @@ export function ParticipantDetails({ initialData, onContinue, onBack }: Particip
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
+              aria-required="true"
               aria-invalid={!!errors.email}
             />
             {errors.email && <span className="ts-field__error" role="alert">{errors.email}</span>}
