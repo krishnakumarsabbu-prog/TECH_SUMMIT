@@ -1,0 +1,783 @@
+:root {
+  --brand-red: #B3192B;
+  --brand-red-dark: #8A1320;
+  --brand-red-light: #D63B4E;
+  --surface: #FFFFFF;
+  --surface-muted: #F5F5F7;
+  --surface-alt: #FAFAFB;
+  --border: #E0E0E4;
+  --border-strong: #C8C8CE;
+  --text-primary: #1A1A1F;
+  --text-secondary: #4A4A52;
+  --text-muted: #8A8A92;
+  --success: #1B7A3D;
+  --success-light: #E8F5EE;
+  --warning: #B8651A;
+  --warning-light: #FCF3E8;
+  --error: #B3192B;
+  --error-light: #FCEEF0;
+  --neutral-50: #FAFAFB;
+  --neutral-100: #F5F5F7;
+  --neutral-200: #E0E0E4;
+  --neutral-300: #C8C8CE;
+  --neutral-400: #A0A0A8;
+  --neutral-500: #8A8A92;
+  --neutral-600: #6A6A72;
+  --neutral-700: #4A4A52;
+  --neutral-800: #2A2A32;
+  --neutral-900: #1A1A1F;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Header ===== */
+.ts-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ts-header__inner {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ts-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-header__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--brand-red);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  border-radius: var(--radius-sm);
+}
+
+.ts-header__title {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.ts-header__year {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+/* ===== Layout ===== */
+.ts-layout {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 48px;
+}
+
+.ts-layout__main {
+  width: 100%;
+  max-width: 640px;
+}
+
+/* ===== Page ===== */
+.ts-page {
+  animation: ts-fade-in 0.35s ease;
+}
+
+.ts-page__container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 28px;
+  box-shadow: var(--shadow-md);
+}
+
+.ts-page__container--wide {
+  padding: 28px 24px;
+}
+
+.ts-page__eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--brand-red);
+  margin-bottom: 12px;
+}
+
+.ts-page__title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.ts-page__title--sm {
+  font-size: 22px;
+}
+
+.ts-page__subtitle {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.ts-page__description {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.ts-page__footer {
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ===== Info Cards ===== */
+.ts-info-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.ts-info-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 12px;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.ts-info-card:hover {
+  border-color: var(--brand-red);
+  box-shadow: var(--shadow-sm);
+}
+
+.ts-info-card__value {
+  display: block;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--brand-red);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.ts-info-card__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+/* ===== Button ===== */
+.ts-btn {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 14px 28px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+}
+
+.ts-btn--primary {
+  background: var(--brand-red);
+  color: #fff;
+}
+
+.ts-btn--primary:hover:not(.ts-btn--disabled) {
+  background: var(--brand-red-dark);
+  box-shadow: var(--shadow-md);
+}
+
+.ts-btn--primary:active:not(.ts-btn--disabled) {
+  transform: scale(0.98);
+}
+
+.ts-btn--secondary {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+}
+
+.ts-btn--secondary:hover:not(.ts-btn--disabled) {
+  border-color: var(--brand-red);
+  color: var(--brand-red);
+}
+
+.ts-btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  padding: 10px 20px;
+  font-size: 13px;
+}
+
+.ts-btn--ghost:hover {
+  color: var(--brand-red);
+  border-color: var(--brand-red);
+}
+
+.ts-btn--full {
+  width: 100%;
+}
+
+.ts-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ts-btn:focus-visible {
+  outline: 2px solid var(--brand-red);
+  outline-offset: 2px;
+}
+
+/* ===== Form ===== */
+.ts-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ts-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ts-field__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ts-field__required {
+  color: var(--brand-red);
+}
+
+.ts-field__optional {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.ts-field__input {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-primary);
+  transition: var(--transition);
+  min-height: 48px;
+  width: 100%;
+}
+
+.ts-field__input:focus {
+  outline: none;
+  border-color: var(--brand-red);
+  box-shadow: 0 0 0 3px rgba(179, 25, 43, 0.12);
+}
+
+.ts-field__input::placeholder {
+  color: var(--text-muted);
+}
+
+.ts-field__error {
+  font-size: 13px;
+  color: var(--error);
+  font-weight: 500;
+}
+
+.ts-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ===== Quiz ===== */
+.ts-quiz-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.ts-progress {
+  flex: 1;
+  min-width: 160px;
+}
+
+.ts-progress__track {
+  height: 6px;
+  background: var(--neutral-200);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ts-progress__fill {
+  height: 100%;
+  background: var(--brand-red);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.ts-progress__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+/* ===== Timer ===== */
+.ts-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--brand-red);
+  background: var(--surface);
+  transition: var(--transition);
+}
+
+.ts-timer__value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--brand-red);
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-timer__unit {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.ts-timer--warning {
+  border-color: var(--warning);
+}
+
+.ts-timer--warning .ts-timer__value {
+  color: var(--warning);
+}
+
+.ts-timer--critical {
+  border-color: var(--error);
+  background: var(--error-light);
+  animation: ts-pulse 1s infinite;
+}
+
+.ts-timer--critical .ts-timer__value {
+  color: var(--error);
+}
+
+/* ===== Question Card ===== */
+.ts-question-card {
+  margin-bottom: 24px;
+}
+
+.ts-question-card__category {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--brand-red);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 12px;
+}
+
+.ts-question-card__text {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.ts-question-card__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ts-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-sans);
+  min-height: 56px;
+}
+
+.ts-option:hover {
+  border-color: var(--brand-red);
+  background: var(--surface-alt);
+}
+
+.ts-option:focus-visible {
+  outline: 2px solid var(--brand-red);
+  outline-offset: 2px;
+}
+
+.ts-option--selected {
+  border-color: var(--brand-red);
+  background: rgba(179, 25, 43, 0.06);
+  box-shadow: inset 0 0 0 1px var(--brand-red);
+}
+
+.ts-option__letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--neutral-100);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+
+.ts-option--selected .ts-option__letter {
+  background: var(--brand-red);
+  color: #fff;
+}
+
+.ts-option__text {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* ===== Quiz Actions ===== */
+.ts-quiz-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ===== Score Card ===== */
+.ts-score-card {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.ts-score-card__headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.ts-score-card__score {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--brand-red);
+  line-height: 1;
+}
+
+.ts-score-card__percentage {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.ts-score-card__time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.ts-score-card__time-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.ts-score-card__time-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ts-score-card__breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.ts-score-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.ts-score-card__value {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.ts-score-card__value--correct { color: var(--success); }
+.ts-score-card__value--incorrect { color: var(--error); }
+.ts-score-card__value--unanswered { color: var(--text-muted); }
+
+.ts-score-card__message {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.ts-score-card__disclaimer {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ===== Already Played ===== */
+.ts-already-icon {
+  color: var(--success);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.ts-already-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+.ts-already-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.ts-already-summary__value {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ===== Test Mode ===== */
+.ts-test-mode {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 999;
+}
+
+/* ===== Error Message ===== */
+.ts-error-message {
+  color: var(--error);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 16px;
+  background: var(--error-light);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+/* ===== Animations ===== */
+@keyframes ts-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ts-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .ts-layout {
+    padding: 12px 10px 32px;
+  }
+
+  .ts-page__container {
+    padding: 28px 20px;
+  }
+
+  .ts-page__title {
+    font-size: 24px;
+  }
+
+  .ts-page__title--sm {
+    font-size: 20px;
+  }
+
+  .ts-page__description {
+    font-size: 14px;
+  }
+
+  .ts-info-cards {
+    gap: 8px;
+  }
+
+  .ts-info-card {
+    padding: 16px 8px;
+  }
+
+  .ts-info-card__value {
+    font-size: 26px;
+  }
+
+  .ts-question-card__text {
+    font-size: 17px;
+  }
+
+  .ts-option {
+    padding: 14px 14px;
+    gap: 12px;
+    min-height: 52px;
+  }
+
+  .ts-option__text {
+    font-size: 14px;
+  }
+
+  .ts-timer__value {
+    font-size: 24px;
+  }
+
+  .ts-quiz-top {
+    gap: 12px;
+  }
+
+  .ts-score-card__score {
+    font-size: 40px;
+  }
+
+  .ts-quiz-actions {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 360px) {
+  .ts-page__container {
+    padding: 24px 16px;
+  }
+
+  .ts-info-card {
+    padding: 14px 6px;
+  }
+
+  .ts-info-card__value {
+    font-size: 22px;
+  }
+
+  .ts-info-card__label {
+    font-size: 10px;
+  }
+}

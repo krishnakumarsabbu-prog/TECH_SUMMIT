@@ -1,0 +1,197 @@
+[
+  {
+    "id": "q001",
+    "category": "Artificial Intelligence",
+    "difficulty": "medium",
+    "question": "Which technique allows a generative AI model to focus on different parts of an input sequence when producing an output?",
+    "options": [
+      "Attention mechanism",
+      "Database indexing",
+      "Packet routing",
+      "File compression"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "q002",
+    "category": "Generative AI",
+    "difficulty": "medium",
+    "question": "What is the primary purpose of retrieval-augmented generation (RAG) in large language model systems?",
+    "options": [
+      "Compressing model weights for faster inference",
+      "Grounding model responses with external knowledge sources",
+      "Encrypting training data at rest",
+      "Balancing network traffic across GPU clusters"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q003",
+    "category": "Cloud",
+    "difficulty": "medium",
+    "question": "In a container orchestration platform, what does a 'pod' typically represent?",
+    "options": [
+      "A physical server chassis",
+      "The smallest deployable unit containing one or more containers",
+      "A network routing rule",
+      "A type of persistent disk volume"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q004",
+    "category": "Cybersecurity",
+    "difficulty": "hard",
+    "question": "Which attack exploits a trusted third-party component or library that has been compromised to reach a downstream target?",
+    "options": [
+      "Cross-site scripting",
+      "Supply chain attack",
+      "DNS cache poisoning",
+      "Brute force credential stuffing"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q005",
+    "category": "Data",
+    "difficulty": "medium",
+    "question": "Which property guarantees that a database transaction is either fully completed or has no effect at all?",
+    "options": [
+      "Isolation",
+      "Durability",
+      "Atomicity",
+      "Consistency"
+    ],
+    "correctAnswer": 2
+  },
+  {
+    "id": "q006",
+    "category": "Software Engineering",
+    "difficulty": "medium",
+    "question": "What is the defining characteristic of a CI/CD pipeline?",
+    "options": [
+      "Manual code review at every stage",
+      "Automated build, test, and deployment on every change",
+      "Encrypting source code before commit",
+      "Running production databases in read-only mode"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q007",
+    "category": "Emerging Technology",
+    "difficulty": "medium",
+    "question": "What is the key advantage of quantum computing over classical computing for specific problem classes?",
+    "options": [
+      "Lower power consumption per operation",
+      "Larger persistent storage capacity",
+      "Solving certain problems in fundamentally fewer computational steps",
+      "Built-in network encryption by default"
+    ],
+    "correctAnswer": 2
+  },
+  {
+    "id": "q008",
+    "category": "Artificial Intelligence",
+    "difficulty": "hard",
+    "question": "Which problem is 'model hallucination' most directly associated with in large language models?",
+    "options": [
+      "The model producing fluent but factually incorrect output",
+      "The model refusing all user prompts",
+      "The model exceeding its token context window",
+      "The model duplicating its training data verbatim"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "q009",
+    "category": "Cloud",
+    "difficulty": "easy",
+    "question": "What does 'serverless' computing primarily abstract away from the developer?",
+    "options": [
+      "The application source code",
+      "Server provisioning, scaling, and maintenance",
+      "The data model and schema",
+      "The user interface layout"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q010",
+    "category": "Cybersecurity",
+    "difficulty": "medium",
+    "question": "What is the core principle of a zero-trust security model?",
+    "options": [
+      "Trust all devices inside the corporate network by default",
+      "Never trust, always verify every access request",
+      "Encrypt only data at rest",
+      "Block all external network traffic permanently"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q011",
+    "category": "Data",
+    "difficulty": "hard",
+    "question": "Which technique is used to reduce the dimensionality of a dataset while preserving the maximum amount of variance?",
+    "options": [
+      "Linear regression",
+      "Principal Component Analysis",
+      "K-means clustering",
+      "Decision tree pruning"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q012",
+    "category": "Software Engineering",
+    "difficulty": "easy",
+    "question": "What does the 'D' in the SOLID design principles stand for?",
+    "options": [
+      "Dependency Inversion",
+      "Dynamic Dispatch",
+      "Data Encapsulation",
+      "Domain Isolation"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "q013",
+    "category": "Generative AI",
+    "difficulty": "medium",
+    "question": "What does 'fine-tuning' a foundation model involve?",
+    "options": [
+      "Reducing the model's parameter count permanently",
+      "Further training on a smaller, task-specific dataset",
+      "Deleting unused layers from the network",
+      "Switching the model to a read-only deployment mode"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q014",
+    "category": "Emerging Technology",
+    "difficulty": "medium",
+    "question": "Which technology enables tamper-evident, distributed transaction records without a central authority?",
+    "options": [
+      "Relational databases",
+      "Blockchain",
+      "Content delivery networks",
+      "Message queues"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "q015",
+    "category": "Cloud",
+    "difficulty": "hard",
+    "question": "What is the primary goal of a multi-cloud strategy?",
+    "options": [
+      "Forcing all workloads onto a single vendor",
+      "Distributing workloads across providers to avoid lock-in and improve resilience",
+      "Encrypting data with a single cloud key",
+      "Reducing the number of API endpoints in use"
+    ],
+    "correctAnswer": 1
+  }
+]
