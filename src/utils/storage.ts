@@ -126,6 +126,38 @@ export function resetAll(): void {
   safeRemove(KEYS.QUIZ_STATE);
 }
 
+const SUBMISSIONS_KEY = 'technology-summit-all-submissions';
+
+export function saveSubmissionRecord(submission: any): void {
+  const existingRaw = safeGet(SUBMISSIONS_KEY);
+  let list: any[] = [];
+  if (existingRaw) {
+    try {
+      list = JSON.parse(existingRaw);
+      if (!Array.isArray(list)) list = [];
+    } catch {
+      list = [];
+    }
+  }
+  list.push(submission);
+  safeSet(SUBMISSIONS_KEY, JSON.stringify(list));
+}
+
+export function getAllSubmissions(): any[] {
+  const existingRaw = safeGet(SUBMISSIONS_KEY);
+  if (!existingRaw) return [];
+  try {
+    const parsed = JSON.parse(existingRaw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function clearAllSubmissions(): void {
+  safeRemove(SUBMISSIONS_KEY);
+}
+
 export function isTestMode(): boolean {
   return new URLSearchParams(window.location.search).get('testMode') === 'true';
 }
@@ -136,3 +168,4 @@ export function determineInitialStage(): AppStage {
   if (getParticipant()) return 'PARTICIPANT';
   return 'WELCOME';
 }
+

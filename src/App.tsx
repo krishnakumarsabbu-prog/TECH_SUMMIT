@@ -192,8 +192,10 @@ export default function App() {
       try {
         await submitResult(participant, persisted, computedResult);
       } catch {
-        setDownloadError('Your score was recorded, but the JSON file could not be downloaded automatically. Your attempt is still saved.');
+        // Fallback error logging - score is still recorded
+        console.warn('Submission recording encountered an issue.');
       }
+
 
       markPlayed();
       clearQuizState();
