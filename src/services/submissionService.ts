@@ -42,23 +42,26 @@ function toBase64Utf8(str: string): string {
 async function syncSubmissionRemote(submission: Submission): Promise<boolean> {
   const payload = JSON.stringify(submission, null, 2);
 
-  // 1. Check for configured submission webhook or API endpoint
+  // 1. Google Sheets Webhook or custom submission endpoint
   const webhookUrl = localStorage.getItem('technology-summit-webhook-url') ||
     (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_SUBMISSION_ENDPOINT) ||
-    '';
+    'https://script.google.com/macros/s/AKfycbwNSijCcsncqXoBKFBNqq8KrT45sD5BIl9onLwE44FG6eXtVzWfKWYWyTg4fKlpvwduTw/exec';
 
   if (webhookUrl) {
     try {
       await fetch(webhookUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: payload,
       });
+      console.log('[Submission] Successfully posted to Google Sheet webhook.');
       return true;
     } catch (e) {
       console.warn('Webhook delivery failed:', e);
     }
   }
+
 
   // 2. Try local server (e.g. when running node server.js on port 3001)
   try {
@@ -75,7 +78,8 @@ async function syncSubmissionRemote(submission: Submission): Promise<boolean> {
   // 3. Commit directly to GitHub repository (krishnakumarsabbu-prog/TECH_SUMMIT/submissions/)
   const ghToken = localStorage.getItem('technology-summit-github-token') ||
     (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GITHUB_TOKEN) ||
-    atob('Z2l0aHViX3BhdF8xMUI3REtHTlEwZjZpQjVpczZmQ2RxX0lZYTBtY0dGQUdBM05vNkJrclhWcXd5Nldadlg5TjV4MW5uU1RzT3RnM0dPUERSU0FRV3JHcWxYUXda');
+    '';
+
 
   if (ghToken) {
     try {
