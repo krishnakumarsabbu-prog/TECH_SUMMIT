@@ -6,5 +6,5 @@ import react from '@vitejs/plugin-react'
 // If you rename the repository, update this value to "/<new-repo-name>/".
 export default defineConfig({
   plugins: [react()],
-  base: '/technology-summit/',
+  base: '/TECH_SUMMIT/',
 })
