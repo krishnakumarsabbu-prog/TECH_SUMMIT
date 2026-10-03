@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b8_q1",
+    "category": "Web3 & Blockchain",
+    "difficulty": "medium",
+    "question": "What is a 'Smart Contract' on a programmable blockchain?",
+    "options": [
+      "Self-executing code stored on the blockchain with terms directly written into code",
+      "A legal document signed with an electronic stylus and saved as a PDF",
+      "An insurance policy purchased through a web browser extension",
+      "An encrypted email exchange between corporate attorneys"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b8_q2",
+    "category": "Web3 & Blockchain",
+    "difficulty": "medium",
+    "question": "What cryptographic data structure enables rapid, tamper-evident verification of transaction inclusion in a block?",
+    "options": [
+      "Merkle Tree",
+      "Binary Search Tree",
+      "Doubly Linked List",
+      "Circular FIFO Queue"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b8_q3",
+    "category": "Web3 & Blockchain",
+    "difficulty": "easy",
+    "question": "What is the primary difference between Proof-of-Work (PoW) and Proof-of-Stake (PoS) consensus mechanisms?",
+    "options": [
+      "PoW relies on intensive computational energy, while PoS validators commit capital (tokens) as collateral",
+      "PoS requires dedicated ASIC mining rigs in massive server farms",
+      "PoW cannot be used for decentralized cryptocurrencies",
+      "PoS executes zero transactions per second"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b8_q4",
+    "category": "Web3 & Blockchain",
+    "difficulty": "hard",
+    "question": "In Layer-2 scaling solutions, how do 'Rollups' (Optimistic or ZK) scale throughput on base chains (Layer 1)?",
+    "options": [
+      "By executing transactions off-chain and posting aggregated proofs and compressed data to Layer 1",
+      "By deleting older historical transactions after 30 days",
+      "By replacing public cryptography with shared enterprise passwords",
+      "By requiring miners to double their GPU clock frequencies"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b8_q5",
+    "category": "Web3 & Blockchain",
+    "difficulty": "medium",
+    "question": "What does 'Zero-Knowledge Proof' (ZKP) allow one party to prove to another?",
+    "options": [
+      "That a statement is true without revealing any information beyond the validity of the statement itself",
+      "That the sender has zero tokens in their wallet",
+      "That the network contains zero latency between peer nodes",
+      "That a database table contains zero rows"
+    ],
+    "correctAnswer": 0
+  }
+]

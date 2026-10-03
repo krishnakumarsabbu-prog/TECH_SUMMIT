@@ -29,6 +29,7 @@ export function buildSubmission(
   participation: Participation,
   quizState: QuizState,
   result: QuizResult,
+  boothsCompletedSoFar: number = 1,
 ): Submission {
   const answers: QuizAnswer[] = quizState.questions.map((q, idx) => {
     const selectedIdx = quizState.answers[idx];
@@ -51,6 +52,13 @@ export function buildSubmission(
       submissionId: generateSubmissionId(),
       completedAt: new Date().toISOString(),
     },
+    booth: quizState.boothId ? {
+      boothId: quizState.boothId,
+      boothNumber: quizState.boothNumber || 1,
+      boothTitle: quizState.boothTitle || 'Technology Challenge',
+      boothsCompletedSoFar,
+      isPrizeEligible: boothsCompletedSoFar >= 4,
+    } : undefined,
     participant,
     participation,
     device,

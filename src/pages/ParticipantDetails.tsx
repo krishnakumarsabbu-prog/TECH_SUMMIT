@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import type { Participant } from '../types';
+import type { Participant, BoothConfig } from '../types';
 import { Button } from '../components/Button';
 
 interface ParticipantDetailsProps {
   initialData: Partial<Participant> | null;
+  targetBooth?: BoothConfig | null;
   onContinue: (participant: Participant) => void;
   onBack: () => void;
 }
@@ -14,7 +15,12 @@ interface FormErrors {
   email?: string;
 }
 
-export function ParticipantDetails({ initialData, onContinue, onBack }: ParticipantDetailsProps) {
+export function ParticipantDetails({
+  initialData,
+  targetBooth,
+  onContinue,
+  onBack,
+}: ParticipantDetailsProps) {
   const [name, setName] = useState(initialData?.name ?? '');
   const [company, setCompany] = useState(initialData?.company ?? '');
   const [role, setRole] = useState(initialData?.role ?? '');
@@ -48,18 +54,30 @@ export function ParticipantDetails({ initialData, onContinue, onBack }: Particip
   return (
     <div className="ts-page ts-page--participant">
       <div className="ts-page__container">
-        <h1 className="ts-page__title ts-page__title--sm">LET'S GET STARTED</h1>
-        <p className="ts-page__description">Enter your details to begin the challenge.</p>
+        {targetBooth && (
+          <div className="ts-participant-booth-pill">
+            <span>{targetBooth.icon}</span>
+            <span>Booth {targetBooth.number}: <strong>{targetBooth.title}</strong></span>
+          </div>
+        )}
+
+        <h1 className="ts-page__title ts-page__title--sm">PARTICIPANT REGISTRATION</h1>
+        <p className="ts-page__description">
+          Register once to unlock all 9 booth challenges and link your Summit Passport.
+        </p>
 
         <form className="ts-form" onSubmit={handleSubmit} noValidate>
           <div className="ts-field">
-            <label htmlFor="name" className="ts-field__label">Full Name <span className="ts-field__required">*</span></label>
+            <label htmlFor="name" className="ts-field__label">
+              Full Name <span className="ts-field__required">*</span>
+            </label>
             <input
               id="name"
               type="text"
               className="ts-field__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Alex Johnson"
               autoComplete="name"
               aria-required="true"
               aria-invalid={!!errors.name}
@@ -68,13 +86,16 @@ export function ParticipantDetails({ initialData, onContinue, onBack }: Particip
           </div>
 
           <div className="ts-field">
-            <label htmlFor="company" className="ts-field__label">Company / Organization <span className="ts-field__required">*</span></label>
+            <label htmlFor="company" className="ts-field__label">
+              Company / Organization <span className="ts-field__required">*</span>
+            </label>
             <input
               id="company"
               type="text"
               className="ts-field__input"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
+              placeholder="e.g. Wells Fargo / Acme Corp"
               autoComplete="organization"
               aria-required="true"
               aria-invalid={!!errors.company}
@@ -83,25 +104,31 @@ export function ParticipantDetails({ initialData, onContinue, onBack }: Particip
           </div>
 
           <div className="ts-field">
-            <label htmlFor="role" className="ts-field__label">Job Title</label>
+            <label htmlFor="role" className="ts-field__label">
+              Role / Designation
+            </label>
             <input
               id="role"
               type="text"
               className="ts-field__input"
               value={role}
               onChange={(e) => setRole(e.target.value)}
+              placeholder="e.g. Senior Software Engineer"
               autoComplete="organization-title"
             />
           </div>
 
           <div className="ts-field">
-            <label htmlFor="email" className="ts-field__label">Email <span className="ts-field__required">*</span></label>
+            <label htmlFor="email" className="ts-field__label">
+              Official Email <span className="ts-field__required">*</span>
+            </label>
             <input
               id="email"
               type="email"
               className="ts-field__input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. alex.j@company.com"
               autoComplete="email"
               aria-required="true"
               aria-invalid={!!errors.email}
@@ -110,14 +137,14 @@ export function ParticipantDetails({ initialData, onContinue, onBack }: Particip
           </div>
 
           <div className="ts-form__actions">
-            <Button variant="secondary" onClick={onBack}>BACK</Button>
-            <Button type="submit">CONTINUE</Button>
+            <Button type="button" variant="secondary" onClick={onBack}>
+              BACK
+            </Button>
+            <Button type="submit">
+              {targetBooth ? `REGISTER & START BOOTH ${targetBooth.number} QUIZ` : 'REGISTER & START QUIZ'}
+            </Button>
           </div>
         </form>
-
-        <p className="ts-page__footer">
-          Your name and organization are collected for event participation. A browser-generated identifier helps prevent duplicate quiz attempts.
-        </p>
       </div>
     </div>
   );

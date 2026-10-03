@@ -1,4 +1,5 @@
-import type { AppStage, Participant, QuizState, QuizResult } from '../types';
+import type { Participant, QuizState, QuizResult, BoothResult } from '../types';
+import { REQUIRED_BOOTHS_TO_WIN } from '../data/boothsConfig';
 
 export const KEYS = {
   DEVICE_ID: 'technology-summit-device-id',
@@ -6,6 +7,7 @@ export const KEYS = {
   PLAYED: 'technology-summit-played',
   RESULT: 'technology-summit-result',
   QUIZ_STATE: 'technology-summit-quiz-state',
+  BOOTH_RESULTS: 'technology-summit-booth-results',
 } as const;
 
 function isStorageAvailable(): boolean {
@@ -71,6 +73,48 @@ export function getParticipant(): Participant | null {
   }
 }
 
+// Multi-booth storage methods
+export function getBoothResults(): Record<string, BoothResult> {
+  const raw = safeGet(KEYS.BOOTH_RESULTS);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveBoothResult(result: BoothResult): void {
+  const all = getBoothResults();
+  all[result.boothId] = result;
+  safeSet(KEYS.BOOTH_RESULTS, JSON.stringify(all));
+}
+
+export function getBoothResult(boothId: string): BoothResult | null {
+  const all = getBoothResults();
+  return all[boothId] || null;
+}
+
+export function hasPlayedBooth(boothId: string): boolean {
+  const all = getBoothResults();
+  return Boolean(all[boothId]);
+}
+
+export function getCompletedBoothCount(): number {
+  const all = getBoothResults();
+  return Object.keys(all).length;
+}
+
+export function getCompletedBoothsList(): BoothResult[] {
+  const all = getBoothResults();
+  return Object.values(all).sort((a, b) => a.boothNumber - b.boothNumber);
+}
+
+export function isQualifiedWinner(): boolean {
+  return getCompletedBoothCount() >= REQUIRED_BOOTHS_TO_WIN;
+}
+
 export function markPlayed(): void {
   safeSet(KEYS.PLAYED, 'true');
 }
@@ -124,6 +168,7 @@ export function resetAll(): void {
   safeRemove(KEYS.PLAYED);
   safeRemove(KEYS.RESULT);
   safeRemove(KEYS.QUIZ_STATE);
+  safeRemove(KEYS.BOOTH_RESULTS);
 }
 
 const SUBMISSIONS_KEY = 'technology-summit-all-submissions';
@@ -162,10 +207,7 @@ export function isTestMode(): boolean {
   return new URLSearchParams(window.location.search).get('testMode') === 'true';
 }
 
-export function determineInitialStage(): AppStage {
-  if (hasPlayed()) return 'ALREADY_PLAYED';
-  if (getQuizState()) return 'QUIZ';
-  if (getParticipant()) return 'PARTICIPANT';
-  return 'WELCOME';
+export function getBoothParamFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('booth') || params.get('b');
 }
-

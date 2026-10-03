@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b9_q1",
+    "category": "Quantum Computing",
+    "difficulty": "medium",
+    "question": "What fundamental quantum property allows a 'qubit' to represent both 0 and 1 states simultaneously until measured?",
+    "options": [
+      "Superposition",
+      "Thermal Dissipation",
+      "Phase Modulation",
+      "Bit Inversion"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b9_q2",
+    "category": "Quantum Computing",
+    "difficulty": "hard",
+    "question": "What phenomenon occurs when the quantum state of two or more particles cannot be described independently of each other?",
+    "options": [
+      "Quantum Entanglement",
+      "Electromagnetic Induction",
+      "Doppler Shift",
+      "Capacitive Coupling"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b9_q3",
+    "category": "Quantum Computing",
+    "difficulty": "medium",
+    "question": "Which famous quantum algorithm provides an exponential speedup for integer factorization, impacting modern RSA encryption?",
+    "options": [
+      "Shor's Algorithm",
+      "Grover's Algorithm",
+      "Dijkstra's Algorithm",
+      "A* Search Algorithm"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b9_q4",
+    "category": "Quantum Computing",
+    "difficulty": "medium",
+    "question": "Why do many superconducting quantum computers require dilution refrigerators cooled near absolute zero (~15 millikelvin)?",
+    "options": [
+      "To prevent thermal noise from causing quantum decoherence in fragile qubits",
+      "To save electricity during peak computational hours",
+      "To freeze liquid nitrogen into crystalline conductors",
+      "To prevent fiber optic cables from melting under laser power"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b9_q5",
+    "category": "Quantum Computing",
+    "difficulty": "easy",
+    "question": "What is 'Quantum Supremacy / Quantum Advantage'?",
+    "options": [
+      "Demonstrating that a programmable quantum device can solve a problem faster than the best classical supercomputer",
+      "Replacing all silicon microprocessors in consumer smartphones with quantum chips",
+      "The complete obsolescence of classical computer programming languages",
+      "Achieving 100% wireless data transfer across interplanetary distances"
+    ],
+    "correctAnswer": 0
+  }
+]

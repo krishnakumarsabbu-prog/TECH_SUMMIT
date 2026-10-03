@@ -42,6 +42,16 @@ export function Quiz({ quizState, onAnswer, onNext, onPrev, onSubmit, submitting
   return (
     <div className="ts-page ts-page--quiz">
       <div className="ts-page__container ts-page__container--wide">
+        {/* Booth Context Bar */}
+        <div className="ts-quiz-booth-header">
+          <span className="ts-quiz-booth-pill">
+            BOOTH {quizState.boothNumber || 1} • {quizState.boothTitle || 'Technology Challenge'}
+          </span>
+          <span className="ts-quiz-count-pill">
+            Question {currentIndex + 1} of {quizState.questions.length}
+          </span>
+        </div>
+
         <div className="ts-quiz-top">
           <ProgressBar current={currentIndex} total={quizState.questions.length} />
           <Timer startTime={quizState.startTime} endTime={endTime ?? quizState.endTime} onExpire={handleExpire} />
@@ -63,7 +73,7 @@ export function Quiz({ quizState, onAnswer, onNext, onPrev, onSubmit, submitting
             </Button>
           ) : (
             <Button onClick={onNext} disabled={submitting || expired}>
-              NEXT
+              NEXT QUESTION →
             </Button>
           )}
         </div>

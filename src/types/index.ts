@@ -40,7 +40,21 @@ export interface QuizAnswer {
   correct: boolean;
 }
 
+export interface BoothConfig {
+  id: string; // e.g. "booth-1"
+  number: number; // 1 to 9
+  title: string;
+  category: string;
+  icon: string;
+  badge: string;
+  description: string;
+  questions: QuizQuestion[];
+}
+
 export interface QuizState {
+  boothId: string;
+  boothNumber: number;
+  boothTitle: string;
   questions: QuizQuestion[];
   answers: (number | null)[];
   currentIndex: number;
@@ -59,6 +73,14 @@ export interface QuizResult {
   timeTakenSeconds: number;
 }
 
+export interface BoothResult extends QuizResult {
+  boothId: string;
+  boothNumber: number;
+  boothTitle: string;
+  completedAt: string;
+  answers: QuizAnswer[];
+}
+
 export interface Submission {
   schemaVersion: string;
   event: {
@@ -69,6 +91,13 @@ export interface Submission {
     submissionId: string;
     completedAt: string;
   };
+  booth?: {
+    boothId: string;
+    boothNumber: number;
+    boothTitle: string;
+    boothsCompletedSoFar: number;
+    isPrizeEligible: boolean;
+  };
   participant: Participant;
   participation: Participation;
   device: DeviceMetadata;
@@ -76,4 +105,4 @@ export interface Submission {
   answers: QuizAnswer[];
 }
 
-export type AppStage = 'WELCOME' | 'PARTICIPANT' | 'QUIZ' | 'RESULT' | 'ALREADY_PLAYED';
+export type AppStage = 'WELCOME' | 'PARTICIPANT' | 'QUIZ' | 'RESULT' | 'ALREADY_PLAYED' | 'PASSPORT';

@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b6_q1",
+    "category": "Software Architecture",
+    "difficulty": "medium",
+    "question": "Which design pattern stops cascaded failures across distributed microservices by failing fast when a dependency is down?",
+    "options": [
+      "Circuit Breaker Pattern",
+      "Singleton Pattern",
+      "Factory Method Pattern",
+      "Observer Pattern"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b6_q2",
+    "category": "Software Architecture",
+    "difficulty": "hard",
+    "question": "What does the CAP theorem state regarding distributed data stores?",
+    "options": [
+      "A distributed system can guarantee at most two out of Consistency, Availability, and Partition Tolerance",
+      "All distributed nodes must share the exact same physical clock",
+      "Compute capacity must always exceed storage capacity by a factor of two",
+      "Caches must always invalidate data after 60 seconds"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b6_q3",
+    "category": "Software Architecture",
+    "difficulty": "medium",
+    "question": "What is the primary advantage of Event-Driven Architecture (EDA)?",
+    "options": [
+      "Decouples service producers and consumers for independent scalability and asynchronous processing",
+      "Requires every microservice to share a single monolithic SQL database",
+      "Eliminates the need for API documentation",
+      "Forces synchronous HTTP blocking across all service calls"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b6_q4",
+    "category": "Software Architecture",
+    "difficulty": "medium",
+    "question": "Which architecture pattern separates read operations from update operations to optimize performance and security?",
+    "options": [
+      "CQRS (Command Query Responsibility Segregation)",
+      "Model-View-Controller (MVC)",
+      "Layered Monolith",
+      "Client-Server Polling"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b6_q5",
+    "category": "Software Architecture",
+    "difficulty": "easy",
+    "question": "What role does an API Gateway serve in a microservices ecosystem?",
+    "options": [
+      "Acts as a single entry point handling routing, authentication, rate limiting, and protocol translation",
+      "Stores all customer payment passwords in plaintext",
+      "Compiles backend source code upon every incoming user request",
+      "Replaces all frontend browser rendering logic"
+    ],
+    "correctAnswer": 0
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b4_q1",
+    "category": "Data Engineering",
+    "difficulty": "medium",
+    "question": "Which ACID property guarantees that a database transaction is either fully completed or completely rolled back?",
+    "options": [
+      "Atomicity",
+      "Consistency",
+      "Isolation",
+      "Durability"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b4_q2",
+    "category": "Data Engineering",
+    "difficulty": "medium",
+    "question": "What is the key difference between ETL and ELT data processing pipelines?",
+    "options": [
+      "In ELT, data is transformed inside the destination data warehouse after loading",
+      "In ELT, data is never stored in persistent storage",
+      "In ETL, data is loaded into memory without extraction",
+      "ELT can only handle uncompressed text files"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b4_q3",
+    "category": "Data Engineering",
+    "difficulty": "hard",
+    "question": "Why are Vector Databases (like Pinecone, Milvus, or Qdrant) critical for AI applications?",
+    "options": [
+      "They perform fast approximate nearest neighbor (ANN) search over high-dimensional embeddings",
+      "They replace relational databases for standard accounting ledgers",
+      "They allow streaming MPEG-4 video directly from RAM",
+      "They convert SQL queries into machine assembly code"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b4_q4",
+    "category": "Data Engineering",
+    "difficulty": "medium",
+    "question": "What architectural pattern combines the ACID transactions of data warehouses with the flexibility of data lakes?",
+    "options": [
+      "Data Lakehouse",
+      "Monolithic Data Silo",
+      "Flat File Staging Area",
+      "Raw Blob Cache"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b4_q5",
+    "category": "Data Engineering",
+    "difficulty": "easy",
+    "question": "Which open-source distributed event store is widely used for high-throughput, real-time data streaming?",
+    "options": [
+      "Apache Kafka",
+      "SQLite",
+      "Microsoft Access",
+      "Memcached"
+    ],
+    "correctAnswer": 0
+  }
+]

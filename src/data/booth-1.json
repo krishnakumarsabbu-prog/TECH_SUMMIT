@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b1_q1",
+    "category": "Generative AI",
+    "difficulty": "medium",
+    "question": "Which mechanism enables Transformer models to compute relationships between all words in an input sequence simultaneously?",
+    "options": [
+      "Self-Attention Mechanism",
+      "Recurrent Backpropagation",
+      "Linear Hash Indexing",
+      "Gradient Stacking"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b1_q2",
+    "category": "Generative AI",
+    "difficulty": "medium",
+    "question": "What is the primary benefit of Retrieval-Augmented Generation (RAG) in LLM applications?",
+    "options": [
+      "Compressing model parameters to run on microcontrollers",
+      "Grounding responses in real-time, external enterprise knowledge",
+      "Removing the requirement for GPU acceleration",
+      "Converting text prompts into binary bytecode"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "b1_q3",
+    "category": "Generative AI",
+    "difficulty": "easy",
+    "question": "What does 'temperature' control in generative language model sampling?",
+    "options": [
+      "The physical temperature of the GPU hardware",
+      "The degree of randomness and creativity in generated responses",
+      "The maximum token count of the prompt context",
+      "The learning rate during model pre-training"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "b1_q4",
+    "category": "Generative AI",
+    "difficulty": "hard",
+    "question": "Which technique freezes base model weights and trains low-rank decomposition matrices for efficient fine-tuning?",
+    "options": [
+      "LoRA (Low-Rank Adaptation)",
+      "Zero-Shot Chain-of-Thought",
+      "Full Parameter SGD",
+      "Dynamic Quantization Layering"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b1_q5",
+    "category": "Generative AI",
+    "difficulty": "medium",
+    "question": "What is 'Hallucination' in the context of Large Language Models?",
+    "options": [
+      "When the model outputs plausible-sounding but factually inaccurate information",
+      "When the model exceeds its maximum allowed memory allocation",
+      "When an unauthorized user intercepts model prompt tokens",
+      "When the model runs out of inference compute cycles"
+    ],
+    "correctAnswer": 0
+  }
+]

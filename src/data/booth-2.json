@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b2_q1",
+    "category": "Cloud & Kubernetes",
+    "difficulty": "medium",
+    "question": "What is the smallest deployable compute unit in Kubernetes that can contain one or more containers?",
+    "options": [
+      "ReplicaSet",
+      "Pod",
+      "DaemonSet",
+      "ConfigMap"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "b2_q2",
+    "category": "Cloud & Kubernetes",
+    "difficulty": "medium",
+    "question": "Which Kubernetes resource provides declarative updates for Pods and ReplicaSets?",
+    "options": [
+      "Deployment",
+      "Ingress Controller",
+      "PersistentVolumeClaim",
+      "NetworkPolicy"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b2_q3",
+    "category": "Cloud & Kubernetes",
+    "difficulty": "easy",
+    "question": "What does 'Auto-scaling' achieve in cloud computing architecture?",
+    "options": [
+      "Automatically formats JSON configuration files",
+      "Dynamically adjusts compute resources based on real-time traffic load",
+      "Backs up cluster logs to tape storage every 24 hours",
+      "Upgrades server firmware automatically during business hours"
+    ],
+    "correctAnswer": 1
+  },
+  {
+    "id": "b2_q4",
+    "category": "Cloud & Kubernetes",
+    "difficulty": "hard",
+    "question": "In a cloud-native service mesh (like Istio), which component handles intra-service traffic routing and mutual TLS?",
+    "options": [
+      "Sidecar Proxy (e.g., Envoy)",
+      "Linux Kernel Cron daemon",
+      "ETCD Key-Value Store",
+      "DNS Resolver Cache"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b2_q5",
+    "category": "Cloud & Kubernetes",
+    "difficulty": "medium",
+    "question": "What is the primary advantage of a Serverless architecture (FaaS)?",
+    "options": [
+      "Executes code on-demand with zero server management and scales to zero",
+      "Requires persistent virtual machines running 24/7",
+      "Eliminates the need for API endpoints completely",
+      "Stores all application state directly in the CPU L1 cache"
+    ],
+    "correctAnswer": 0
+  }
+]

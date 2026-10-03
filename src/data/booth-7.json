@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b7_q1",
+    "category": "Edge Computing & IoT",
+    "difficulty": "medium",
+    "question": "What is the primary motivation for Edge Computing instead of sending all telemetry data to centralized cloud centers?",
+    "options": [
+      "Sub-millisecond latency, reduced bandwidth consumption, and local autonomy",
+      "Completely eliminating the need for electrical power in sensor nodes",
+      "Restricting devices from ever updating their firmware",
+      "Eliminating the need for operating systems on microcontrollers"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b7_q2",
+    "category": "Edge Computing & IoT",
+    "difficulty": "easy",
+    "question": "Which lightweight publish-subscribe network protocol is standard for constrained IoT devices and low-bandwidth networks?",
+    "options": [
+      "MQTT",
+      "FTP",
+      "SMTP",
+      "BGP"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b7_q3",
+    "category": "Edge Computing & IoT",
+    "difficulty": "medium",
+    "question": "What does 'OTA update' refer to in IoT fleet management?",
+    "options": [
+      "Over-The-Air remote wireless firmware and software deployment",
+      "On-Time Arrival of physical shipping packages",
+      "One-Time Authentication for browser cookies",
+      "Optical Transmitter Alignment for fiber cables"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b7_q4",
+    "category": "Edge Computing & IoT",
+    "difficulty": "hard",
+    "question": "What is a 'Digital Twin' in modern Industrial IoT (IIoT)?",
+    "options": [
+      "A real-time virtual digital representation of a physical asset or industrial process",
+      "A backup USB drive kept in the factory office safe",
+      "Two identical microcontrollers soldered to the same circuit board",
+      "An automated bot account operating on social media"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b7_q5",
+    "category": "Edge Computing & IoT",
+    "difficulty": "medium",
+    "question": "Which wireless communication protocol is optimized for low-power, wide-area IoT networks (LPWAN) across kilometer-scale ranges?",
+    "options": [
+      "LoRaWAN",
+      "NFC (Near Field Communication)",
+      "Standard Bluetooth 2.0",
+      "HDMI Ethernet Channel"
+    ],
+    "correctAnswer": 0
+  }
+]

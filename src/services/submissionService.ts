@@ -14,16 +14,17 @@ export async function generateSubmission(
   participant: Participant,
   quizState: QuizState,
   result: QuizResult,
+  boothsCompletedSoFar: number = 1,
 ): Promise<Submission> {
   const device = collectDeviceMetadata();
   const participationKey = await generateParticipationKey(participant);
   const participation: Participation = {
     deviceId: device.deviceId,
     participationKey,
-    attemptNumber: 1,
+    attemptNumber: boothsCompletedSoFar,
   };
 
-  const submission = buildSubmission(participant, device, participation, quizState, result);
+  const submission = buildSubmission(participant, device, participation, quizState, result, boothsCompletedSoFar);
   if (!validateSubmission(submission)) {
     throw new Error('Generated submission failed validation.');
   }
@@ -62,7 +63,6 @@ async function syncSubmissionRemote(submission: Submission): Promise<boolean> {
     }
   }
 
-
   // 2. Try local server (e.g. when running node server.js on port 3001)
   try {
     const res = await fetch('http://localhost:3001/api/submissions', {
@@ -80,12 +80,11 @@ async function syncSubmissionRemote(submission: Submission): Promise<boolean> {
     (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GITHUB_TOKEN) ||
     '';
 
-
   if (ghToken) {
     try {
       const fileName = `submission_${submission.submission.submissionId}.json`;
       const base64Content = toBase64Utf8(payload);
-      const commitMsg = `Add ${fileName} (${submission.participant.name} - ${submission.participant.company})`;
+      const commitMsg = `Add ${fileName} (${submission.participant.name} - ${submission.booth?.boothTitle || submission.participant.company})`;
 
       const res = await fetch(`https://api.github.com/repos/krishnakumarsabbu-prog/TECH_SUMMIT/contents/submissions/${fileName}`, {
         method: 'PUT',
@@ -115,24 +114,22 @@ async function syncSubmissionRemote(submission: Submission): Promise<boolean> {
   return false;
 }
 
-
 export async function submitResult(
   participant: Participant,
   quizState: QuizState,
   result: QuizResult,
+  boothsCompletedSoFar: number = 1,
 ): Promise<Submission> {
   // 1. Generate standard submission schema
-  const submission = await generateSubmission(participant, quizState, result);
+  const submission = await generateSubmission(participant, quizState, result, boothsCompletedSoFar);
 
   // 2. Persist in local storage so participant reports are stored inside the project
   saveSubmissionRecord(submission);
 
-  // 3. Dispatch to remote backend / GitHub repo without blocking or triggering a download
+  // 3. Dispatch to remote backend / Google Sheets / GitHub repo without blocking
   syncSubmissionRemote(submission).catch((err) => {
     console.info('Remote sync background info:', err);
   });
 
-  // NOTE: downloadSubmissionJSON(submission) disabled so attendees don't receive download prompts
   return submission;
 }
-

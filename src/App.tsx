@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { AppStage, Participant, QuizState, QuizResult } from './types';
-import questionsData from './data/questions.json';
+import type { AppStage, Participant, QuizState, QuizResult, BoothConfig, BoothResult } from './types';
 import { Header } from './components/Header';
 import { Layout } from './components/Layout';
 import { Welcome } from './pages/Welcome';
@@ -8,9 +7,9 @@ import { ParticipantDetails } from './pages/ParticipantDetails';
 import { Quiz } from './pages/Quiz';
 import { Results } from './pages/Results';
 import { AlreadyPlayed } from './pages/AlreadyPlayed';
+import { Passport } from './pages/Passport';
 import { Button } from './components/Button';
 import { prepareQuestions } from './utils/quiz';
-import { TIMER_DURATION_SECONDS } from './utils/timer';
 import { submitResult } from './services/submissionService';
 import {
   getParticipant,
@@ -18,73 +17,98 @@ import {
   getQuizState,
   saveQuizState,
   clearQuizState,
-  markPlayed,
-  hasPlayed,
-  getResult,
-  saveResult,
+  getBoothResults,
+  saveBoothResult,
+  getBoothResult,
+  hasPlayedBooth,
   resetAll,
   isTestMode,
-  KEYS,
+  getBoothParamFromUrl,
 } from './utils/storage';
+import { getBoothById, BOOTHS, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
 
 const QUESTION_COUNT = 5;
 
 export default function App() {
   const [stage, setStage] = useState<AppStage>('WELCOME');
+  const [prevStage, setPrevStage] = useState<AppStage>('WELCOME');
   const [participant, setParticipant] = useState<Participant | null>(null);
+  const [targetBooth, setTargetBooth] = useState<BoothConfig | null>(null);
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [result, setResult] = useState<QuizResult | null>(null);
-  const [completedAt, setCompletedAt] = useState<string | null>(null);
+  const [currentBoothResult, setCurrentBoothResult] = useState<BoothResult | null>(null);
+  const [boothResults, setBoothResults] = useState<Record<string, BoothResult>>({});
   const [submitting, setSubmitting] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [testMode, setTestMode] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Initialize from storage on mount
+  // Initialize and route based on URL and stored state
   useEffect(() => {
     setTestMode(isTestMode());
-
-    if (hasPlayed()) {
-      setStage('ALREADY_PLAYED');
-      setResult(getResult());
-      const raw = localStorage.getItem(KEYS.RESULT);
-      // completedAt is not separately stored; derive from result existence
-      setCompletedAt(raw ? new Date().toISOString() : null);
-      return;
-    }
-
-    const savedQuiz = getQuizState();
-    if (savedQuiz) {
-      setQuizState(savedQuiz);
-      setStage('QUIZ');
-      return;
-    }
 
     const savedParticipant = getParticipant();
     if (savedParticipant) {
       setParticipant(savedParticipant);
-      setStage('PARTICIPANT');
+    }
+
+    const savedResults = getBoothResults();
+    setBoothResults(savedResults);
+
+    // Check for unfinished saved quiz
+    const savedQuiz = getQuizState();
+    if (savedQuiz && savedQuiz.questions && savedQuiz.questions.length > 0) {
+      setQuizState(savedQuiz);
+      const b = getBoothById(savedQuiz.boothId);
+      if (b) setTargetBooth(b);
+      setStage('QUIZ');
       return;
     }
 
+    // Check URL parameters for booth targeting
+    const boothParam = getBoothParamFromUrl();
+    const matchedBooth = getBoothById(boothParam);
+
+    if (matchedBooth) {
+      setTargetBooth(matchedBooth);
+
+      // Check if user is registered
+      if (!savedParticipant) {
+        // Unregistered: prompt registration first
+        setStage('PARTICIPANT');
+        return;
+      }
+
+      // User is registered: check if they already completed this booth
+      if (hasPlayedBooth(matchedBooth.id)) {
+        setCurrentBoothResult(getBoothResult(matchedBooth.id));
+        setStage('ALREADY_PLAYED');
+        return;
+      }
+
+      // User registered and booth not yet played: launch quiz directly!
+      startBoothQuiz(matchedBooth);
+      return;
+    }
+
+    // If no specific booth in URL:
+    // If attendee is registered and has played at least one booth, show their Passport!
+    if (savedParticipant && Object.keys(savedResults).length > 0) {
+      setStage('PASSPORT');
+      return;
+    }
+
+    // Otherwise show Welcome screen
     setStage('WELCOME');
   }, []);
 
-  const handleStart = useCallback(() => {
-    if (hasPlayed()) {
-      setStage('ALREADY_PLAYED');
-      return;
-    }
-    setStage('PARTICIPANT');
-  }, []);
-
-  const handleParticipantContinue = useCallback((p: Participant) => {
-    setParticipant(p);
-    saveParticipant(p);
-    // Create fresh quiz
+  const startBoothQuiz = useCallback((booth: BoothConfig) => {
     try {
-      const prepared = prepareQuestions(questionsData as QuizState['questions'], QUESTION_COUNT);
+      const prepared = prepareQuestions(booth.questions, QUESTION_COUNT);
       const newQuiz: QuizState = {
+        boothId: booth.id,
+        boothNumber: booth.number,
+        boothTitle: booth.title,
         questions: prepared,
         answers: new Array(QUESTION_COUNT).fill(null),
         currentIndex: 0,
@@ -94,11 +118,38 @@ export default function App() {
       };
       setQuizState(newQuiz);
       saveQuizState(newQuiz);
+      setTargetBooth(booth);
       setStage('QUIZ');
     } catch {
-      setLoadError('Unable to load the question bank. Please refresh the page.');
+      setLoadError(`Unable to load questions for ${booth.title}. Please refresh.`);
     }
   }, []);
+
+  const handleStartFromWelcome = useCallback(() => {
+    const booth = targetBooth || BOOTHS[0];
+    if (!participant) {
+      setTargetBooth(booth);
+      setStage('PARTICIPANT');
+      return;
+    }
+
+    if (hasPlayedBooth(booth.id)) {
+      setCurrentBoothResult(getBoothResult(booth.id));
+      setStage('ALREADY_PLAYED');
+      return;
+    }
+
+    startBoothQuiz(booth);
+  }, [targetBooth, participant, startBoothQuiz]);
+
+  const handleParticipantRegister = useCallback((p: Participant) => {
+    setParticipant(p);
+    saveParticipant(p);
+
+    // If an active booth was scanned, seamlessly launch its quiz!
+    const booth = targetBooth || BOOTHS[0];
+    startBoothQuiz(booth);
+  }, [targetBooth, startBoothQuiz]);
 
   const handleAnswer = useCallback((questionIndex: number, answerIndex: number) => {
     setQuizState((prev) => {
@@ -143,13 +194,12 @@ export default function App() {
         incorrect++;
       }
     });
+
     const endTime = qs.endTime ?? Date.now();
-    const timeTaken = Math.min(
-      TIMER_DURATION_SECONDS,
-      Math.floor((endTime - qs.startTime) / 1000),
-    );
+    const timeTaken = Math.min(60, Math.floor((endTime - qs.startTime) / 1000));
     const total = qs.questions.length;
     const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+
     return {
       score: correct,
       totalQuestions: total,
@@ -174,9 +224,7 @@ export default function App() {
       return updated;
     });
 
-    // Use the latest state via a microtask to ensure state is set
     setTimeout(async () => {
-      // Read from storage to get the persisted submitted state
       const persisted = getQuizState();
       if (!persisted || !participant) {
         setSubmitting(false);
@@ -186,42 +234,95 @@ export default function App() {
 
       const computedResult = computeResult(persisted);
       setResult(computedResult);
-      saveResult(computedResult);
-      setCompletedAt(new Date().toISOString());
 
+      // Save booth result to local multi-booth store
+      const answersList = persisted.questions.map((q, idx) => ({
+        questionId: q.id,
+        selectedAnswer: persisted.answers[idx] !== null && persisted.answers[idx] !== undefined ? q.options[persisted.answers[idx]!] : null,
+        correct: persisted.answers[idx] === q.correctAnswer,
+      }));
+
+      const newBoothResult: BoothResult = {
+        ...computedResult,
+        boothId: persisted.boothId,
+        boothNumber: persisted.boothNumber,
+        boothTitle: persisted.boothTitle,
+        completedAt: new Date().toISOString(),
+        answers: answersList,
+      };
+
+      saveBoothResult(newBoothResult);
+      const updatedBoothResults = getBoothResults();
+      setBoothResults(updatedBoothResults);
+      setCurrentBoothResult(newBoothResult);
+
+      const completedCount = Object.keys(updatedBoothResults).length;
+
+      // Submit to Google Sheets / server
       try {
-        await submitResult(participant, persisted, computedResult);
+        await submitResult(participant, persisted, computedResult, completedCount);
       } catch {
-        // Fallback error logging - score is still recorded
         console.warn('Submission recording encountered an issue.');
       }
 
-
-      markPlayed();
       clearQuizState();
+      setQuizState(null);
       setStage('RESULT');
       setSubmitting(false);
     }, 50);
   }, [submitting, participant, computeResult]);
 
-  const handleDone = useCallback(() => {
-    setStage('ALREADY_PLAYED');
-    setResult(getResult());
-  }, []);
+  const handleOpenPassport = useCallback(() => {
+    if (stage === 'PASSPORT') {
+      setStage(prevStage || 'WELCOME');
+    } else {
+      setPrevStage(stage);
+      setStage('PASSPORT');
+    }
+  }, [stage, prevStage]);
+
+  const handleSelectBoothFromPassport = useCallback((boothId: string) => {
+    const booth = getBoothById(boothId);
+    if (!booth) return;
+
+    if (!participant) {
+      setTargetBooth(booth);
+      setStage('PARTICIPANT');
+      return;
+    }
+
+    if (hasPlayedBooth(booth.id)) {
+      setCurrentBoothResult(getBoothResult(booth.id));
+      setStage('ALREADY_PLAYED');
+      return;
+    }
+
+    startBoothQuiz(booth);
+  }, [participant, startBoothQuiz]);
 
   const handleReset = useCallback(() => {
     resetAll();
     setParticipant(null);
     setQuizState(null);
     setResult(null);
-    setCompletedAt(null);
+    setCurrentBoothResult(null);
+    setBoothResults({});
+    setTargetBooth(null);
     setDownloadError(null);
     setStage('WELCOME');
   }, []);
 
+  const completedCount = Object.keys(boothResults).length;
+  const isWinner = completedCount >= REQUIRED_BOOTHS_TO_WIN;
+
   return (
     <>
-      <Header />
+      <Header
+        completedCount={completedCount}
+        isWinner={isWinner}
+        onOpenPassport={participant ? handleOpenPassport : undefined}
+        isPassportActive={stage === 'PASSPORT'}
+      />
       <Layout>
         {loadError && (
           <div className="ts-page">
@@ -232,13 +333,22 @@ export default function App() {
         )}
 
         {!loadError && stage === 'WELCOME' && (
-          <Welcome onStart={handleStart} onResume={() => setStage('QUIZ')} hasSavedQuiz={!!getQuizState()} />
+          <Welcome
+            targetBooth={targetBooth}
+            participant={participant}
+            completedCount={completedCount}
+            onStart={handleStartFromWelcome}
+            onResume={() => setStage('QUIZ')}
+            hasSavedQuiz={!!getQuizState()}
+            onOpenPassport={() => setStage('PASSPORT')}
+          />
         )}
 
         {!loadError && stage === 'PARTICIPANT' && (
           <ParticipantDetails
             initialData={participant}
-            onContinue={handleParticipantContinue}
+            targetBooth={targetBooth}
+            onContinue={handleParticipantRegister}
             onBack={() => setStage('WELCOME')}
           />
         )}
@@ -255,16 +365,42 @@ export default function App() {
         )}
 
         {!loadError && stage === 'RESULT' && result && (
-          <Results result={result} onDone={handleDone} downloadError={downloadError} />
+          <Results
+            result={result}
+            boothTitle={targetBooth?.title}
+            boothNumber={targetBooth?.number}
+            completedCount={completedCount}
+            onDone={() => setStage('PASSPORT')}
+            downloadError={downloadError}
+          />
         )}
 
         {!loadError && stage === 'ALREADY_PLAYED' && (
-          <AlreadyPlayed result={result ?? getResult()} completedAt={completedAt} onDone={() => {}} />
+          <AlreadyPlayed
+            boothResult={currentBoothResult}
+            overallResult={result}
+            completedCount={completedCount}
+            completedAt={currentBoothResult?.completedAt || null}
+            onDone={() => setStage('PASSPORT')}
+            onExploreOtherBooths={() => setStage('PASSPORT')}
+          />
+        )}
+
+        {!loadError && stage === 'PASSPORT' && (
+          <Passport
+            participant={participant}
+            boothResults={boothResults}
+            onSelectBooth={handleSelectBoothFromPassport}
+            onBackToCurrent={quizState ? () => setStage('QUIZ') : undefined}
+            hasActiveQuiz={Boolean(quizState)}
+          />
         )}
 
         {testMode && (
           <div className="ts-test-mode">
-            <Button variant="ghost" onClick={handleReset}>RESET PARTICIPATION</Button>
+            <Button variant="ghost" onClick={handleReset}>
+              RESET ALL PARTICIPATION DATA
+            </Button>
           </div>
         )}
       </Layout>

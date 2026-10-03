@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b3_q1",
+    "category": "Cybersecurity",
+    "difficulty": "medium",
+    "question": "What is the core philosophical tenet of a 'Zero Trust' security architecture?",
+    "options": [
+      "Never trust, always verify every request regardless of location",
+      "Trust all internal traffic originating from the corporate VPN",
+      "Disable all SSL/TLS encryption for internal microservices",
+      "Use single-factor passwords for internal enterprise tools"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b3_q2",
+    "category": "Cybersecurity",
+    "difficulty": "hard",
+    "question": "Which attack exploits compromised third-party dependencies or build systems to breach downstream organizations?",
+    "options": [
+      "Supply Chain Attack",
+      "Cross-Site Scripting (XSS)",
+      "ARP Cache Poisoning",
+      "SQL Injection"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b3_q3",
+    "category": "Cybersecurity",
+    "difficulty": "easy",
+    "question": "What is Multi-Factor Authentication (MFA) designed to prevent?",
+    "options": [
+      "Unauthorized account access resulting from compromised single passwords",
+      "High network latency during database queries",
+      "Buffer overflow in compiled C programs",
+      "Overheating of mobile phone batteries"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b3_q4",
+    "category": "Cybersecurity",
+    "difficulty": "medium",
+    "question": "What is the primary role of a Web Application Firewall (WAF)?",
+    "options": [
+      "Filter, monitor, and block malicious HTTP/HTTPS traffic to web apps",
+      "Compile TypeScript code into minified JavaScript bundles",
+      "Encrypt hard drives on physical database machines",
+      "Manage Kubernetes node autoscaling groups"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b3_q5",
+    "category": "Cybersecurity",
+    "difficulty": "medium",
+    "question": "In cryptographic systems, what distinguishes Asymmetric encryption from Symmetric encryption?",
+    "options": [
+      "Asymmetric uses a key pair (public & private), symmetric uses a single shared key",
+      "Asymmetric encryption cannot be decrypted once encrypted",
+      "Symmetric encryption is only usable for audio files",
+      "Asymmetric algorithms do not require mathematical operations"
+    ],
+    "correctAnswer": 0
+  }
+]

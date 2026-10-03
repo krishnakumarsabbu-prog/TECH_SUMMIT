@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b5_q1",
+    "category": "DevOps & CI/CD",
+    "difficulty": "medium",
+    "question": "What is the primary objective of Continuous Integration (CI)?",
+    "options": [
+      "Automatically build and run automated tests on code changes whenever developers commit",
+      "Deploy code directly to production without staging or reviews",
+      "Shut down unused development servers at midnight",
+      "Replace all unit testing with manual QA verification"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b5_q2",
+    "category": "DevOps & CI/CD",
+    "difficulty": "medium",
+    "question": "Which deployment strategy routes a small percentage of production traffic to a new version before full rollout?",
+    "options": [
+      "Canary Deployment",
+      "Big Bang Cutover",
+      "Recreate Deployment",
+      "Cold Standby Switch"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b5_q3",
+    "category": "DevOps & CI/CD",
+    "difficulty": "hard",
+    "question": "In Site Reliability Engineering (SRE), what does an 'Error Budget' represent?",
+    "options": [
+      "The allowable margin of unreliability before engineering priorities shift from features to reliability",
+      "The total financial penalty paid to cloud providers for outages",
+      "The maximum number of bugs a developer is permitted to write per sprint",
+      "The annual IT budget reserved for buying replacement hard drives"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b5_q4",
+    "category": "DevOps & CI/CD",
+    "difficulty": "easy",
+    "question": "What paradigm manages infrastructure configuration declaratively through version-controlled files?",
+    "options": [
+      "Infrastructure as Code (IaC)",
+      "Manual Server Provisioning",
+      "Direct SSH Administration",
+      "Ad-hoc Terminal Scripting"
+    ],
+    "correctAnswer": 0
+  },
+  {
+    "id": "b5_q5",
+    "category": "DevOps & CI/CD",
+    "difficulty": "medium",
+    "question": "What are the three core pillars of system Observability?",
+    "options": [
+      "Metrics, Logs, and Distributed Traces",
+      "Backups, Firewalls, and Antivirus",
+      "Passwords, Keys, and Certificates",
+      "CPU, RAM, and Disk Space"
+    ],
+    "correctAnswer": 0
+  }
+]
