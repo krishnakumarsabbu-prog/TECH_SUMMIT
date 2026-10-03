@@ -63,7 +63,7 @@ export function Welcome({
 
         {participant && (
           <div className="ts-welcome-registered-notice">
-            <span>👋 Welcome back, <strong>{participant.name}</strong> ({participant.company})</span>
+            <span>👋 Welcome back, <strong>{participant.name}</strong> (EntID: <strong>{participant.entId}</strong>)</span>
             <button type="button" className="ts-link-btn" onClick={onOpenPassport}>
               View Your Passport ({completedCount}/{REQUIRED_BOOTHS_TO_WIN}) →
             </button>

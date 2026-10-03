@@ -11,8 +11,7 @@ interface ParticipantDetailsProps {
 
 interface FormErrors {
   name?: string;
-  company?: string;
-  email?: string;
+  entId?: string;
 }
 
 export function ParticipantDetails({
@@ -22,20 +21,13 @@ export function ParticipantDetails({
   onBack,
 }: ParticipantDetailsProps) {
   const [name, setName] = useState(initialData?.name ?? '');
-  const [company, setCompany] = useState(initialData?.company ?? '');
-  const [role, setRole] = useState(initialData?.role ?? '');
-  const [email, setEmail] = useState(initialData?.email ?? '');
+  const [entId, setEntId] = useState(initialData?.entId ?? '');
   const [errors, setErrors] = useState<FormErrors>({});
 
   function validate(): boolean {
     const e: FormErrors = {};
     if (!name.trim()) e.name = 'Full name is required.';
-    if (!company.trim()) e.company = 'Company or organization is required.';
-    if (!email.trim()) {
-      e.email = 'Email address is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      e.email = 'Please enter a valid email address.';
-    }
+    if (!entId.trim()) e.entId = 'Enterprise ID (EntID) is required.';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -45,9 +37,7 @@ export function ParticipantDetails({
     if (!validate()) return;
     onContinue({
       name: name.trim().replace(/\s+/g, ' '),
-      company: company.trim().replace(/\s+/g, ' '),
-      role: role.trim().replace(/\s+/g, ' '),
-      email: email.trim(),
+      entId: entId.trim().toUpperCase(),
     });
   }
 
@@ -63,7 +53,7 @@ export function ParticipantDetails({
 
         <h1 className="ts-page__title ts-page__title--sm">PARTICIPANT REGISTRATION</h1>
         <p className="ts-page__description">
-          Register once to unlock all 9 booth challenges and link your Summit Passport.
+          Enter your Name and Enterprise ID (EntID) once to unlock all 9 booth challenges.
         </p>
 
         <form className="ts-form" onSubmit={handleSubmit} noValidate>
@@ -86,54 +76,21 @@ export function ParticipantDetails({
           </div>
 
           <div className="ts-field">
-            <label htmlFor="company" className="ts-field__label">
-              Company / Organization <span className="ts-field__required">*</span>
+            <label htmlFor="entId" className="ts-field__label">
+              Enterprise ID (EntID) <span className="ts-field__required">*</span>
             </label>
             <input
-              id="company"
+              id="entId"
               type="text"
               className="ts-field__input"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              placeholder="e.g. Wells Fargo / Acme Corp"
-              autoComplete="organization"
+              value={entId}
+              onChange={(e) => setEntId(e.target.value)}
+              placeholder="e.g. U123456"
+              autoCapitalize="characters"
               aria-required="true"
-              aria-invalid={!!errors.company}
+              aria-invalid={!!errors.entId}
             />
-            {errors.company && <span className="ts-field__error" role="alert">{errors.company}</span>}
-          </div>
-
-          <div className="ts-field">
-            <label htmlFor="role" className="ts-field__label">
-              Role / Designation
-            </label>
-            <input
-              id="role"
-              type="text"
-              className="ts-field__input"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="e.g. Senior Software Engineer"
-              autoComplete="organization-title"
-            />
-          </div>
-
-          <div className="ts-field">
-            <label htmlFor="email" className="ts-field__label">
-              Official Email <span className="ts-field__required">*</span>
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="ts-field__input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. alex.j@company.com"
-              autoComplete="email"
-              aria-required="true"
-              aria-invalid={!!errors.email}
-            />
-            {errors.email && <span className="ts-field__error" role="alert">{errors.email}</span>}
+            {errors.entId && <span className="ts-field__error" role="alert">{errors.entId}</span>}
           </div>
 
           <div className="ts-form__actions">

@@ -55,22 +55,27 @@ export default function App() {
     const savedResults = getBoothResults();
     setBoothResults(savedResults);
 
-    // Check for unfinished saved quiz
-    const savedQuiz = getQuizState();
-    if (savedQuiz && savedQuiz.questions && savedQuiz.questions.length > 0) {
-      setQuizState(savedQuiz);
-      const b = getBoothById(savedQuiz.boothId);
-      if (b) setTargetBooth(b);
-      setStage('QUIZ');
-      return;
-    }
-
     // Check URL parameters for booth targeting
     const boothParam = getBoothParamFromUrl();
     const matchedBooth = getBoothById(boothParam);
 
     if (matchedBooth) {
       setTargetBooth(matchedBooth);
+
+      // STRICT RESTRICTION: If already played, immediately display AlreadyPlayed screen with result!
+      if (hasPlayedBooth(matchedBooth.id)) {
+        setCurrentBoothResult(getBoothResult(matchedBooth.id));
+        setStage('ALREADY_PLAYED');
+        return;
+      }
+
+      // Check for unfinished saved quiz for THIS specific booth
+      const savedQuiz = getQuizState();
+      if (savedQuiz && savedQuiz.boothId === matchedBooth.id && !savedQuiz.submitted) {
+        setQuizState(savedQuiz);
+        setStage('QUIZ');
+        return;
+      }
 
       // Check if user is registered
       if (!savedParticipant) {
@@ -79,16 +84,23 @@ export default function App() {
         return;
       }
 
-      // User is registered: check if they already completed this booth
-      if (hasPlayedBooth(matchedBooth.id)) {
-        setCurrentBoothResult(getBoothResult(matchedBooth.id));
-        setStage('ALREADY_PLAYED');
-        return;
-      }
-
       // User registered and booth not yet played: launch quiz directly!
       startBoothQuiz(matchedBooth);
       return;
+    }
+
+    // Check for unfinished saved quiz (when no specific booth param in URL)
+    const savedQuiz = getQuizState();
+    if (savedQuiz && savedQuiz.questions && savedQuiz.questions.length > 0) {
+      if (hasPlayedBooth(savedQuiz.boothId)) {
+        clearQuizState();
+      } else {
+        setQuizState(savedQuiz);
+        const b = getBoothById(savedQuiz.boothId);
+        if (b) setTargetBooth(b);
+        setStage('QUIZ');
+        return;
+      }
     }
 
     // If no specific booth in URL:
@@ -103,6 +115,14 @@ export default function App() {
   }, []);
 
   const startBoothQuiz = useCallback((booth: BoothConfig) => {
+    // Guard: Prevent starting any booth that has already been completed
+    if (hasPlayedBooth(booth.id)) {
+      setCurrentBoothResult(getBoothResult(booth.id));
+      setTargetBooth(booth);
+      setStage('ALREADY_PLAYED');
+      return;
+    }
+
     try {
       const prepared = prepareQuestions(booth.questions, QUESTION_COUNT);
       const newQuiz: QuizState = {
@@ -127,15 +147,16 @@ export default function App() {
 
   const handleStartFromWelcome = useCallback(() => {
     const booth = targetBooth || BOOTHS[0];
-    if (!participant) {
+    if (hasPlayedBooth(booth.id)) {
+      setCurrentBoothResult(getBoothResult(booth.id));
       setTargetBooth(booth);
-      setStage('PARTICIPANT');
+      setStage('ALREADY_PLAYED');
       return;
     }
 
-    if (hasPlayedBooth(booth.id)) {
-      setCurrentBoothResult(getBoothResult(booth.id));
-      setStage('ALREADY_PLAYED');
+    if (!participant) {
+      setTargetBooth(booth);
+      setStage('PARTICIPANT');
       return;
     }
 
@@ -148,6 +169,13 @@ export default function App() {
 
     // If an active booth was scanned, seamlessly launch its quiz!
     const booth = targetBooth || BOOTHS[0];
+    if (hasPlayedBooth(booth.id)) {
+      setCurrentBoothResult(getBoothResult(booth.id));
+      setTargetBooth(booth);
+      setStage('ALREADY_PLAYED');
+      return;
+    }
+
     startBoothQuiz(booth);
   }, [targetBooth, startBoothQuiz]);
 
@@ -281,25 +309,6 @@ export default function App() {
     }
   }, [stage, prevStage]);
 
-  const handleSelectBoothFromPassport = useCallback((boothId: string) => {
-    const booth = getBoothById(boothId);
-    if (!booth) return;
-
-    if (!participant) {
-      setTargetBooth(booth);
-      setStage('PARTICIPANT');
-      return;
-    }
-
-    if (hasPlayedBooth(booth.id)) {
-      setCurrentBoothResult(getBoothResult(booth.id));
-      setStage('ALREADY_PLAYED');
-      return;
-    }
-
-    startBoothQuiz(booth);
-  }, [participant, startBoothQuiz]);
-
   const handleReset = useCallback(() => {
     resetAll();
     setParticipant(null);
@@ -390,7 +399,6 @@ export default function App() {
           <Passport
             participant={participant}
             boothResults={boothResults}
-            onSelectBooth={handleSelectBoothFromPassport}
             onBackToCurrent={quizState ? () => setStage('QUIZ') : undefined}
             hasActiveQuiz={Boolean(quizState)}
           />

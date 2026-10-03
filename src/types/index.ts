@@ -1,8 +1,9 @@
 export interface Participant {
   name: string;
-  company: string;
-  role: string;
-  email: string;
+  entId: string;
+  company?: string;
+  role?: string;
+  email?: string;
 }
 
 export interface DeviceMetadata {

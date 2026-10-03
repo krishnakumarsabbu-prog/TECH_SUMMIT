@@ -6,7 +6,6 @@ import { Button } from '../components/Button';
 interface PassportProps {
   participant: Participant | null;
   boothResults: Record<string, BoothResult>;
-  onSelectBooth?: (boothId: string) => void;
   onBackToCurrent?: () => void;
   hasActiveQuiz?: boolean;
 }
@@ -14,7 +13,6 @@ interface PassportProps {
 export function Passport({
   participant,
   boothResults,
-  onSelectBooth,
   onBackToCurrent,
   hasActiveQuiz,
 }: PassportProps) {
@@ -58,9 +56,8 @@ export function Passport({
 
           {participant && (
             <p className="ts-passport-meta">
-              <span>🏢 {participant.company}</span>
-              {participant.role && <span> • 💼 {participant.role}</span>}
-              <span> • ✉️ {participant.email}</span>
+              <span>👤 <strong>{participant.name}</strong></span>
+              <span> • 🆔 EntID: <strong>{participant.entId}</strong></span>
             </p>
           )}
         </div>
@@ -123,7 +120,7 @@ export function Passport({
         <div className="ts-booths-matrix-section">
           <div className="ts-matrix-header">
             <h2 className="ts-matrix-title">All 9 Summit Booths Status</h2>
-            <span className="ts-matrix-subtitle">Scan each booth's QR code on-site to unlock its quiz</span>
+            <span className="ts-matrix-subtitle">Physical booth visits required: Scan each booth's standee QR code on-site to unlock</span>
           </div>
 
           <div className="ts-booths-grid">
@@ -163,16 +160,9 @@ export function Passport({
                     </div>
                   ) : (
                     <div className="ts-booth-card__action">
-                      <span className="ts-booth-card__prompt">📷 Scan QR code at booth to play</span>
-                      {onSelectBooth && (
-                        <button
-                          type="button"
-                          className="ts-booth-card__btn-preview"
-                          onClick={() => onSelectBooth(booth.id)}
-                        >
-                          Open Booth Quiz →
-                        </button>
-                      )}
+                      <div className="ts-booth-scan-pill">
+                        <span>📷 Visit Booth {booth.number} & scan QR to play</span>
+                      </div>
                     </div>
                   )}
                 </div>

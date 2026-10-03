@@ -26,6 +26,11 @@ export function AlreadyPlayed({
   return (
     <div className="ts-page ts-page--already-played">
       <div className="ts-page__container">
+        {/* Restriction Badge */}
+        <div className="ts-restriction-badge">
+          <span>🔒 ATTEMPT ALREADY RECORDED • RETAKE RESTRICTED</span>
+        </div>
+
         <div className="ts-already-icon" aria-hidden="true">
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
             <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="3" />
@@ -39,7 +44,7 @@ export function AlreadyPlayed({
 
         <p className="ts-page__description">
           {boothResult
-            ? `You have already completed the quiz for "${boothResult.boothTitle}". Your score is saved to your Summit Passport.`
+            ? `You have already submitted your answers for "${boothResult.boothTitle}". Each attendee is restricted to one attempt per booth to ensure summit leaderboard integrity.`
             : 'You have already recorded an attempt for this challenge.'}
         </p>
 
@@ -47,22 +52,42 @@ export function AlreadyPlayed({
           <div className="ts-already-summary">
             {boothResult && (
               <div className="ts-already-summary__row">
-                <span>Booth</span>
-                <span className="ts-already-summary__value">Booth {boothResult.boothNumber}: {boothResult.boothTitle}</span>
+                <span>Booth Scanned</span>
+                <span className="ts-already-summary__value">
+                  Booth {boothResult.boothNumber}: {boothResult.boothTitle}
+                </span>
               </div>
             )}
             <div className="ts-already-summary__row">
-              <span>Score achieved</span>
-              <span className="ts-already-summary__value">{result.score} / {result.totalQuestions} ({result.percentage}%)</span>
+              <span>Your Final Score</span>
+              <span className="ts-already-summary__value ts-highlight-score">
+                {result.score} / {result.totalQuestions} ({result.percentage}%)
+              </span>
             </div>
             <div className="ts-already-summary__row">
-              <span>Time taken</span>
+              <span>Correct Answers</span>
+              <span className="ts-already-summary__value" style={{ color: '#1B7A3D' }}>
+                {result.correctAnswers} of {result.totalQuestions}
+              </span>
+            </div>
+            {result.incorrectAnswers > 0 && (
+              <div className="ts-already-summary__row">
+                <span>Incorrect Answers</span>
+                <span className="ts-already-summary__value" style={{ color: '#B3192B' }}>
+                  {result.incorrectAnswers}
+                </span>
+              </div>
+            )}
+            <div className="ts-already-summary__row">
+              <span>Time Taken</span>
               <span className="ts-already-summary__value">{result.timeTakenSeconds} seconds</span>
             </div>
             {completedAt && (
               <div className="ts-already-summary__row">
-                <span>Completed at</span>
-                <span className="ts-already-summary__value">{new Date(completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>Submitted At</span>
+                <span className="ts-already-summary__value">
+                  {new Date(completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
             )}
           </div>
@@ -81,8 +106,8 @@ export function AlreadyPlayed({
             </h3>
             <p className="ts-milestone-desc">
               {isWinner
-                ? 'You have fulfilled the prize requirement! Head over to the summit prize desk.'
-                : `Visit any of the remaining booths and scan their QR code to reach the 4-booth goal (needs ${remaining} more).`}
+                ? 'You have completed the required booths! Present your Passport at the summit helpdesk.'
+                : `Visit any of the other booths across the floor and scan their QR code to reach the 4-booth goal (needs ${remaining} more).`}
             </p>
           </div>
         </div>
