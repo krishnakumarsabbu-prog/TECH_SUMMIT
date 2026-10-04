@@ -149,7 +149,8 @@ export function getQuizState(): QuizState | null {
     if (
       !Array.isArray(parsed.questions) ||
       !Array.isArray(parsed.answers) ||
-      typeof parsed.startTime !== 'number'
+      typeof parsed.startTime !== 'number' ||
+      !parsed.boothId
     ) {
       return null;
     }
