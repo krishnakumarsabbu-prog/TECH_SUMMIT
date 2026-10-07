@@ -1419,4 +1419,445 @@ html, body {
   color: var(--brand-red) !important;
 }
 
+/* ===== Clickable Booth Scan Pill ===== */
+.ts-booth-scan-pill--clickable {
+  width: 100%;
+  cursor: pointer;
+  background: linear-gradient(135deg, #FFF5F6 0%, #FFFFFF 100%);
+  border: 1.5px solid rgba(179, 25, 43, 0.35);
+  color: var(--brand-red);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(179, 25, 43, 0.08);
+}
+
+.ts-booth-scan-pill--clickable:hover {
+  background: var(--brand-red);
+  color: #FFFFFF;
+  border-color: var(--brand-red);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(179, 25, 43, 0.25);
+}
+
+.ts-booth-scan-pill--clickable:active {
+  transform: translateY(0);
+}
+
+.ts-matrix-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ts-passport-scan-qr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #B3192B 0%, #8A1320 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(179, 25, 43, 0.28);
+  transition: all 0.2s ease;
+}
+
+.ts-passport-scan-qr-btn:hover {
+  background: linear-gradient(135deg, #C72B3E 0%, #A01524 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(179, 25, 43, 0.35);
+}
+
+.ts-passport-scan-qr-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== Camera QR Scanner Modal ===== */
+.ts-scanner-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 15, 20, 0.85);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: ts-fade-in 0.25s ease;
+}
+
+.ts-scanner-modal {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  animation: ts-scale-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ts-scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ts-scanner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.ts-scanner-header__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ts-scanner-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--brand-red);
+}
+
+.ts-scanner-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ts-scanner-close {
+  background: var(--neutral-200);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ts-scanner-close:hover {
+  background: var(--neutral-300);
+  color: var(--text-primary);
+}
+
+.ts-scanner-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ts-scanner-viewport-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  background: #000000;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.ts-scanner-video-container {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative;
+}
+
+.ts-scanner-video-container video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.ts-scanner-video-container #ts-camera-qr-viewport__scan_region {
+  border: none !important;
+}
+
+.ts-scanner-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ts-scanner-target-box {
+  width: 220px;
+  height: 220px;
+  position: relative;
+}
+
+.ts-scanner-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: #F7C948;
+  border-style: solid;
+}
+
+.ts-scanner-corner--tl {
+  top: 0;
+  left: 0;
+  border-width: 4px 0 0 4px;
+  border-top-left-radius: 6px;
+}
+
+.ts-scanner-corner--tr {
+  top: 0;
+  right: 0;
+  border-width: 4px 4px 0 0;
+  border-top-right-radius: 6px;
+}
+
+.ts-scanner-corner--bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 4px 4px;
+  border-bottom-left-radius: 6px;
+}
+
+.ts-scanner-corner--br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 4px 4px 0;
+  border-bottom-right-radius: 6px;
+}
+
+.ts-scanner-laser {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #F7C948 30%, #FFFFFF 50%, #F7C948 70%, transparent);
+  box-shadow: 0 0 12px #F7C948, 0 0 4px #FFFFFF;
+  animation: ts-laser-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+@keyframes ts-laser-sweep {
+  0% {
+    top: 8px;
+  }
+  100% {
+    top: calc(100% - 11px);
+  }
+}
+
+.ts-scanner-status-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.88);
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  gap: 12px;
+  z-index: 10;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ts-scanner-status-overlay--success {
+  background: rgba(27, 122, 61, 0.92);
+}
+
+.ts-scanner-status-overlay--error {
+  background: rgba(20, 20, 26, 0.94);
+}
+
+.ts-scanner-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #F7C948;
+  border-radius: 50%;
+  animation: ts-spin 0.8s linear infinite;
+}
+
+@keyframes ts-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ts-scanner-check {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.ts-scanner-err-icon {
+  font-size: 32px;
+}
+
+.ts-scanner-err-text {
+  font-size: 13px;
+  color: #E0E0E4;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ts-scanner-retry-btn {
+  margin-top: 8px;
+  background: #F7C948;
+  color: #1A1A1F;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ts-scanner-instruction {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 14px;
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+.ts-scanner-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.ts-scanner-camera-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.ts-scanner-camera-picker select {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-primary);
+}
+
+.ts-scanner-tool-btn {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ts-scanner-tool-btn:hover {
+  background: var(--neutral-200);
+  color: var(--text-primary);
+}
+
+.ts-scanner-tool-btn--active {
+  background: #FCF3E8;
+  border-color: #B8651A;
+  color: #B8651A;
+}
+
+.ts-scanner-footer {
+  padding: 12px 20px;
+  background: var(--surface-muted);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ts-scanner-cancel-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ts-scanner-cancel-btn:hover {
+  background: var(--neutral-200);
+  color: var(--text-primary);
+}
+
+/* Scanner Feedback Toast */
+.ts-scanner-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1050;
+  background: #1A1A1F;
+  color: #FFFFFF;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: ts-fade-in 0.2s ease;
+}
+
+.ts-scanner-toast--error {
+  background: #B3192B;
+}
+
+
 

@@ -309,6 +309,26 @@ export default function App() {
     }
   }, [stage, prevStage]);
 
+  const handleLaunchBoothFromPassport = useCallback((booth: BoothConfig) => {
+    setTargetBooth(booth);
+    if (hasPlayedBooth(booth.id)) {
+      setCurrentBoothResult(getBoothResult(booth.id));
+      setStage('ALREADY_PLAYED');
+      return;
+    }
+
+    if (!participant) {
+      setStage('PARTICIPANT');
+      return;
+    }
+
+    startBoothQuiz(booth);
+  }, [participant, startBoothQuiz]);
+
+  const handleOpenScannedUrl = useCallback((url: string) => {
+    window.location.href = url;
+  }, []);
+
   const handleReset = useCallback(() => {
     resetAll();
     setParticipant(null);
@@ -401,6 +421,8 @@ export default function App() {
             boothResults={boothResults}
             onBackToCurrent={quizState ? () => setStage('QUIZ') : undefined}
             hasActiveQuiz={Boolean(quizState)}
+            onLaunchBooth={handleLaunchBoothFromPassport}
+            onOpenUrl={handleOpenScannedUrl}
           />
         )}
 

@@ -1,13 +1,17 @@
-import { useMemo } from 'react';
-import type { Participant, BoothResult } from '../types';
+import { useMemo, useState, useCallback } from 'react';
+import type { Participant, BoothResult, BoothConfig } from '../types';
 import { BOOTHS, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
 import { Button } from '../components/Button';
+import { QRScannerModal } from '../components/QRScannerModal';
+import { parseBoothFromScan } from '../utils/qrHelper';
 
 interface PassportProps {
   participant: Participant | null;
   boothResults: Record<string, BoothResult>;
   onBackToCurrent?: () => void;
   hasActiveQuiz?: boolean;
+  onLaunchBooth?: (booth: BoothConfig) => void;
+  onOpenUrl?: (url: string) => void;
 }
 
 export function Passport({
@@ -15,7 +19,13 @@ export function Passport({
   boothResults,
   onBackToCurrent,
   hasActiveQuiz,
+  onLaunchBooth,
+  onOpenUrl,
 }: PassportProps) {
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scanTargetBooth, setScanTargetBooth] = useState<BoothConfig | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const completedList = useMemo(() => Object.values(boothResults), [boothResults]);
   const completedCount = completedList.length;
   const isWinner = completedCount >= REQUIRED_BOOTHS_TO_WIN;
@@ -26,7 +36,6 @@ export function Passport({
     let totalScore = 0;
     let totalQuestions = 0;
     let totalTime = 0;
-
     completedList.forEach((r) => {
       totalScore += r.score;
       totalQuestions += r.totalQuestions;
@@ -40,6 +49,33 @@ export function Passport({
   }, [completedList, completedCount]);
 
   const progressPercentage = Math.min(100, Math.round((completedCount / REQUIRED_BOOTHS_TO_WIN) * 100));
+
+  const handleOpenScanner = useCallback((target?: BoothConfig | null) => {
+    setScanTargetBooth(target || null);
+    setIsScannerOpen(true);
+  }, []);
+
+  const handleScanSuccess = useCallback((decodedText: string) => {
+    const { booth, externalUrl } = parseBoothFromScan(decodedText);
+    setIsScannerOpen(false);
+
+    if (booth) {
+      if (onLaunchBooth) {
+        onLaunchBooth(booth);
+      }
+    } else if (externalUrl) {
+      if (onOpenUrl) {
+        onOpenUrl(externalUrl);
+      } else {
+        window.location.href = externalUrl;
+      }
+    } else {
+      setToastMessage(
+        `Scanned: "${decodedText.length > 40 ? decodedText.slice(0, 40) + '...' : decodedText}". Not recognized as a summit booth challenge.`
+      );
+      setTimeout(() => setToastMessage(null), 4500);
+    }
+  }, [onLaunchBooth, onOpenUrl]);
 
   return (
     <div className="ts-page ts-page--passport">
@@ -119,8 +155,18 @@ export function Passport({
         {/* 9 Booths Matrix */}
         <div className="ts-booths-matrix-section">
           <div className="ts-matrix-header">
-            <h2 className="ts-matrix-title">All 9 Summit Booths Status</h2>
-            <span className="ts-matrix-subtitle">Physical booth visits required: Scan each booth's standee QR code on-site to unlock</span>
+            <div>
+              <h2 className="ts-matrix-title">All 9 Summit Booths Status</h2>
+              <span className="ts-matrix-subtitle">Physical booth visits required: Scan each booth's standee QR code on-site to unlock</span>
+            </div>
+            <button
+              type="button"
+              className="ts-passport-scan-qr-btn"
+              onClick={() => handleOpenScanner(null)}
+              title="Open camera to scan any booth QR code"
+            >
+              📷 Scan QR to Play
+            </button>
           </div>
 
           <div className="ts-booths-grid">
@@ -160,9 +206,14 @@ export function Passport({
                     </div>
                   ) : (
                     <div className="ts-booth-card__action">
-                      <div className="ts-booth-scan-pill">
-                        <span>📷 Visit Booth {booth.number} & scan QR to play</span>
-                      </div>
+                      <button
+                        type="button"
+                        className="ts-booth-scan-pill ts-booth-scan-pill--clickable"
+                        onClick={() => handleOpenScanner(booth)}
+                        title={`Open camera to scan Booth ${booth.number} QR code`}
+                      >
+                        <span>📷 Scan QR to play Booth {booth.number}</span>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -177,6 +228,22 @@ export function Passport({
             <Button onClick={onBackToCurrent} fullWidth>
               RETURN TO CURRENT QUIZ
             </Button>
+          </div>
+        )}
+
+        {/* Live Camera QR Scanner Modal */}
+        <QRScannerModal
+          isOpen={isScannerOpen}
+          onClose={() => setIsScannerOpen(false)}
+          onScanSuccess={handleScanSuccess}
+          targetBooth={scanTargetBooth}
+        />
+
+        {/* Toast feedback */}
+        {toastMessage && (
+          <div className="ts-scanner-toast ts-scanner-toast--error" role="alert">
+            <span>⚠️</span>
+            <span>{toastMessage}</span>
           </div>
         )}
       </div>
