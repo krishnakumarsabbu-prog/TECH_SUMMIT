@@ -92,3 +92,36 @@ export function playScanSound(): void {
     // AudioContext might be restricted until user gesture; ignore safely
   }
 }
+
+/**
+ * Play a warning/error feedback tone on mismatched or invalid QR scan
+ */
+export function playErrorSound(): void {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(260, ctx.currentTime);
+    osc.frequency.setValueAtTime(180, ctx.currentTime + 0.12);
+
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.28);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+
+    if (navigator.vibrate) {
+      navigator.vibrate([100, 60, 100]);
+    }
+  } catch {
+    // Ignore safely
+  }
+}
+

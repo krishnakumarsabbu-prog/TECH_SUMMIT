@@ -3,7 +3,7 @@ import type { Participant, BoothResult, BoothConfig } from '../types';
 import { BOOTHS, REQUIRED_BOOTHS_TO_WIN, TOTAL_BOOTHS } from '../data/boothsConfig';
 import { Button } from '../components/Button';
 import { QRScannerModal } from '../components/QRScannerModal';
-import { parseBoothFromScan } from '../utils/qrHelper';
+import { parseBoothFromScan, playErrorSound } from '../utils/qrHelper';
 
 interface PassportProps {
   participant: Participant | null;
@@ -57,6 +57,17 @@ export function Passport({
 
   const handleScanSuccess = useCallback((decodedText: string) => {
     const { booth, externalUrl } = parseBoothFromScan(decodedText);
+
+    // If user clicked a specific booth button (e.g. Booth 9) but scanned a different booth (e.g. Booth 6)
+    if (scanTargetBooth && booth && booth.id !== scanTargetBooth.id) {
+      playErrorSound();
+      setToastMessage(
+        `❌ Wrong Booth! You selected Booth ${scanTargetBooth.number} (${scanTargetBooth.title}), but scanned Booth ${booth.number} (${booth.title}). Please scan the QR code for Booth ${scanTargetBooth.number} to play.`
+      );
+      setTimeout(() => setToastMessage(null), 6000);
+      return;
+    }
+
     setIsScannerOpen(false);
 
     if (booth) {
@@ -75,7 +86,7 @@ export function Passport({
       );
       setTimeout(() => setToastMessage(null), 4500);
     }
-  }, [onLaunchBooth, onOpenUrl]);
+  }, [scanTargetBooth, onLaunchBooth, onOpenUrl]);
 
   return (
     <div className="ts-page ts-page--passport">

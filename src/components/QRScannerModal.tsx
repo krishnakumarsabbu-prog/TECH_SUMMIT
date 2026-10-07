@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { playScanSound } from '../utils/qrHelper';
+import { playScanSound, playErrorSound, parseBoothFromScan } from '../utils/qrHelper';
 import type { BoothConfig } from '../types';
 
 interface QRScannerModalProps {
@@ -21,6 +21,10 @@ export function QRScannerModal({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(true);
   const [hasScanned, setHasScanned] = useState(false);
+  const [boothMismatch, setBoothMismatch] = useState<{
+    expectedBooth: BoothConfig;
+    scannedBooth: BoothConfig;
+  } | null>(null);
   const [cameras, setCameras] = useState<{ id: string; label: string }[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
   const [torchOn, setTorchOn] = useState(false);
@@ -28,6 +32,7 @@ export function QRScannerModal({
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isStoppingRef = useRef(false);
+  const isMismatchRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Stop camera helper
@@ -48,16 +53,36 @@ export function QRScannerModal({
     }
   }, []);
 
+  const handleDismissMismatch = () => {
+    isMismatchRef.current = false;
+    setBoothMismatch(null);
+  };
+
   const handleScan = useCallback(
     async (decodedText: string) => {
-      if (hasScanned) return;
+      if (hasScanned || isMismatchRef.current) return;
+
+      // Validate target booth if user clicked a specific booth
+      if (targetBooth) {
+        const { booth } = parseBoothFromScan(decodedText);
+        if (booth && booth.id !== targetBooth.id) {
+          isMismatchRef.current = true;
+          playErrorSound();
+          setBoothMismatch({
+            expectedBooth: targetBooth,
+            scannedBooth: booth,
+          });
+          return;
+        }
+      }
+
       setHasScanned(true);
       playScanSound();
 
       await stopCamera();
       onScanSuccess(decodedText);
     },
-    [hasScanned, stopCamera, onScanSuccess]
+    [hasScanned, targetBooth, stopCamera, onScanSuccess]
   );
 
   // Initialize and start scanner when open
@@ -66,6 +91,8 @@ export function QRScannerModal({
 
     let mounted = true;
     setHasScanned(false);
+    setBoothMismatch(null);
+    isMismatchRef.current = false;
     setCameraError(null);
     setIsStarting(true);
     isStoppingRef.current = false;
@@ -311,6 +338,28 @@ export function QRScannerModal({
                   onClick={() => fileInputRef.current?.click()}
                 >
                   📁 Upload Photo of QR Code
+                </button>
+              </div>
+            )}
+
+            {/* Booth mismatch error overlay */}
+            {boothMismatch && (
+              <div className="ts-scanner-status-overlay ts-scanner-status-overlay--mismatch" role="alert">
+                <span className="ts-scanner-err-icon">❌</span>
+                <div className="ts-scanner-mismatch-title">WRONG BOOTH SCANNED</div>
+                <p className="ts-scanner-mismatch-desc">
+                  You clicked to scan <strong>Booth {boothMismatch.expectedBooth.number} ({boothMismatch.expectedBooth.title})</strong>,
+                  but scanned <strong>Booth {boothMismatch.scannedBooth.number} ({boothMismatch.scannedBooth.title})</strong>.
+                </p>
+                <p className="ts-scanner-mismatch-instruction">
+                  Please scan the official QR code at <strong>Booth {boothMismatch.expectedBooth.number}</strong>!
+                </p>
+                <button
+                  type="button"
+                  className="ts-scanner-retry-btn ts-scanner-retry-btn--mismatch"
+                  onClick={handleDismissMismatch}
+                >
+                  🔄 Scan Booth {boothMismatch.expectedBooth.number} Again
                 </button>
               </div>
             )}
