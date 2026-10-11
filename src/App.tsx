@@ -10,8 +10,9 @@ import { Results } from './pages/Results';
 import { AlreadyPlayed } from './pages/AlreadyPlayed';
 import { Passport } from './pages/Passport';
 import { Button } from './components/Button';
+import { GitHubSyncModal } from './components/GitHubSyncModal';
 import { prepareQuestions } from './utils/quiz';
-import { submitResult } from './services/submissionService';
+import { submitResult, registerParticipant } from './services/submissionService';
 import {
   getParticipant,
   saveParticipant,
@@ -43,6 +44,7 @@ export default function App() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [testMode, setTestMode] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
 
   // Initialize and route based on URL and stored state
   useEffect(() => {
@@ -165,6 +167,12 @@ export default function App() {
   const handleParticipantRegister = useCallback((p: Participant) => {
     setParticipant(p);
     saveParticipant(p);
+
+    // Sync registration record to Excel (Google Sheets) and GitHub results repository (TECH_SUMMIT_RESULT)
+    registerParticipant(p).catch((err) => {
+      console.warn('Registration sync error:', err);
+    });
+
     // After registration, go directly to passport page where attendee can decide which booth to play!
     setStage('PASSPORT');
   }, []);
@@ -278,9 +286,9 @@ export default function App() {
 
       const completedCount = Object.keys(updatedBoothResults).length;
 
-      // Submit to Google Sheets / server
+      // Submit to Google Sheets (Excel) / server / GitHub result repository (TECH_SUMMIT_RESULT)
       try {
-        await submitResult(participant, persisted, computedResult, completedCount);
+        await submitResult(participant, persisted, computedResult, completedCount, updatedBoothResults);
       } catch {
         console.warn('Submission recording encountered an issue.');
       }
@@ -429,12 +437,21 @@ export default function App() {
         )}
 
         {testMode && (
-          <div className="ts-test-mode">
+          <div className="ts-test-mode" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button variant="ghost" onClick={handleReset}>
               RESET ALL PARTICIPATION DATA
             </Button>
+            <Button variant="ghost" onClick={() => setIsGitHubModalOpen(true)}>
+              ⚙ GITHUB RESULTS SYNC
+            </Button>
           </div>
         )}
+
+        <GitHubSyncModal
+          isOpen={isGitHubModalOpen}
+          onClose={() => setIsGitHubModalOpen(false)}
+          currentEntId={participant?.entId}
+        />
       </Layout>
     </>
   );
