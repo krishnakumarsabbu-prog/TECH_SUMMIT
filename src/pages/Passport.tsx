@@ -12,6 +12,7 @@ interface PassportProps {
   hasActiveQuiz?: boolean;
   onLaunchBooth?: (booth: BoothConfig) => void;
   onOpenUrl?: (url: string) => void;
+  onEditProfile?: () => void;
 }
 
 export function Passport({
@@ -21,6 +22,7 @@ export function Passport({
   hasActiveQuiz,
   onLaunchBooth,
   onOpenUrl,
+  onEditProfile,
 }: PassportProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scanTargetBooth, setScanTargetBooth] = useState<BoothConfig | null>(null);
@@ -102,10 +104,23 @@ export function Passport({
           </h1>
 
           {participant && (
-            <p className="ts-passport-meta">
-              <span>👤 <strong>{participant.name}</strong></span>
-              <span> • 🆔 EntID: <strong>{participant.entId}</strong></span>
-            </p>
+            <div className="ts-passport-meta-row">
+              <p className="ts-passport-meta">
+                <span>👤 <strong>{participant.name}</strong></span>
+                <span> • 🆔 EntID: <strong>{participant.entId}</strong></span>
+                {participant.lob && <span> • 🏢 LOB: <strong>{participant.lob}</strong></span>}
+              </p>
+              {onEditProfile && (
+                <button
+                  type="button"
+                  className="ts-passport-edit-btn"
+                  onClick={onEditProfile}
+                  title="Update registration details"
+                >
+                  ✏️ Edit
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -219,11 +234,11 @@ export function Passport({
                     <div className="ts-booth-card__action">
                       <button
                         type="button"
-                        className="ts-booth-scan-pill ts-booth-scan-pill--clickable"
+                        className="ts-booth-scan-btn"
                         onClick={() => handleOpenScanner(booth)}
-                        title={`Open camera to scan Booth ${booth.number} QR code`}
+                        title={`Scan Booth ${booth.number} (${booth.title}) standee QR code to unlock quiz`}
                       >
-                        <span>📷 Scan QR to play Booth {booth.number}</span>
+                        <span>📷 Scan Booth {booth.number} QR to Play</span>
                       </button>
                     </div>
                   )}

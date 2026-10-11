@@ -1,6 +1,7 @@
 export interface Participant {
   name: string;
   entId: string;
+  lob?: string;
   company?: string;
   role?: string;
   email?: string;
@@ -41,6 +42,16 @@ export interface QuizAnswer {
   correct: boolean;
 }
 
+export interface BoothTopic {
+  id: string; // e.g. "booth-1_topic-1"
+  boothId: string; // e.g. "booth-1"
+  topicKey: string; // e.g. "topic-1"
+  title: string;
+  description?: string;
+  questions: QuizQuestion[];
+  questionCount: number;
+}
+
 export interface BoothConfig {
   id: string; // e.g. "booth-1"
   number: number; // 1 to 9
@@ -49,6 +60,7 @@ export interface BoothConfig {
   icon: string;
   badge: string;
   description: string;
+  topics?: BoothTopic[];
   questions: QuizQuestion[];
 }
 
@@ -56,6 +68,8 @@ export interface QuizState {
   boothId: string;
   boothNumber: number;
   boothTitle: string;
+  topicId?: string;
+  topicTitle?: string;
   questions: QuizQuestion[];
   answers: (number | null)[];
   currentIndex: number;
@@ -78,6 +92,8 @@ export interface BoothResult extends QuizResult {
   boothId: string;
   boothNumber: number;
   boothTitle: string;
+  topicId?: string;
+  topicTitle?: string;
   completedAt: string;
   answers: QuizAnswer[];
 }
@@ -96,6 +112,7 @@ export interface Submission {
     boothId: string;
     boothNumber: number;
     boothTitle: string;
+    topicTitle?: string;
     boothsCompletedSoFar: number;
     isPrizeEligible: boolean;
   };
@@ -106,4 +123,4 @@ export interface Submission {
   answers: QuizAnswer[];
 }
 
-export type AppStage = 'WELCOME' | 'PARTICIPANT' | 'QUIZ' | 'RESULT' | 'ALREADY_PLAYED' | 'PASSPORT';
+export type AppStage = 'WELCOME' | 'PARTICIPANT' | 'TOPIC_SELECTION' | 'QUIZ' | 'RESULT' | 'ALREADY_PLAYED' | 'PASSPORT';

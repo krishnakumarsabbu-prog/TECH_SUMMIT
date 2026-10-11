@@ -46,6 +46,7 @@ export function Quiz({ quizState, onAnswer, onNext, onPrev, onSubmit, submitting
         <div className="ts-quiz-booth-header">
           <span className="ts-quiz-booth-pill">
             BOOTH {quizState.boothNumber || 1} • {quizState.boothTitle || 'Technology Challenge'}
+            {quizState.topicTitle ? ` • ${quizState.topicTitle}` : ''}
           </span>
           <span className="ts-quiz-count-pill">
             Question {currentIndex + 1} of {quizState.questions.length}

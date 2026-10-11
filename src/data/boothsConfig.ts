@@ -1,4 +1,4 @@
-import type { BoothConfig, QuizQuestion } from '../types';
+import type { BoothConfig, BoothTopic, QuizQuestion } from '../types';
 
 import booth1Questions from './booth-1.json';
 import booth2Questions from './booth-2.json';
@@ -10,7 +10,84 @@ import booth7Questions from './booth-7.json';
 import booth8Questions from './booth-8.json';
 import booth9Questions from './booth-9.json';
 
-export const BOOTHS: BoothConfig[] = [
+// Dynamically discover all topic JSON files across all booth subfolders
+// Matches patterns like ./booth-1/topics/topic-1/questions.json or any nested json files
+const topicModules = import.meta.glob<any>('./booth-*/**/*.json', { eager: true });
+
+function formatTopicTitle(folderName: string): string {
+  return folderName
+    .split(/[-_]+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+export function loadAllBoothTopics(): Record<string, BoothTopic[]> {
+  const result: Record<string, BoothTopic[]> = {};
+
+  for (const [filePath, mod] of Object.entries(topicModules)) {
+    // filePath example: "./booth-1/topics/topic-1/questions.json"
+    const boothMatch = filePath.match(/(booth-\d+)/i);
+    if (!boothMatch) continue;
+    const boothId = boothMatch[1].toLowerCase();
+
+    // Extract topic folder name
+    const topicMatch = filePath.match(/\/topics\/([^/]+)\//i) || filePath.match(/\/(booth-\d+)\/([^/]+)\//i);
+    const topicFolder = topicMatch ? (topicMatch[1].toLowerCase() === boothId ? (topicMatch[2] || 'topic-1') : topicMatch[1]) : 'topic-1';
+
+    const rawData = (mod as any).default ?? mod;
+    let questions: QuizQuestion[] = [];
+    let title = formatTopicTitle(topicFolder);
+    let description: string | undefined;
+
+    if (Array.isArray(rawData)) {
+      questions = rawData;
+    } else if (rawData && typeof rawData === 'object') {
+      if (Array.isArray(rawData.questions)) {
+        questions = rawData.questions;
+      }
+      if (rawData.title) {
+        title = rawData.title;
+      } else if (rawData.topic) {
+        title = rawData.topic;
+      }
+      if (rawData.description) {
+        description = rawData.description;
+      }
+    }
+
+    if (questions.length === 0) continue;
+
+    const topic: BoothTopic = {
+      id: `${boothId}_${topicFolder}`,
+      boothId,
+      topicKey: topicFolder,
+      title,
+      description,
+      questions,
+      questionCount: questions.length,
+    };
+
+    if (!result[boothId]) {
+      result[boothId] = [];
+    }
+    result[boothId].push(topic);
+  }
+
+  // Sort topics naturally by topicKey
+  for (const bId of Object.keys(result)) {
+    result[bId].sort((a, b) => a.topicKey.localeCompare(b.topicKey, undefined, { numeric: true }));
+  }
+
+  return result;
+}
+
+const allDiscoveredTopics = loadAllBoothTopics();
+
+export function getTopicsForBooth(boothId: string): BoothTopic[] {
+  return allDiscoveredTopics[boothId.toLowerCase()] || [];
+}
+
+const BOOTH_DEFINITIONS = [
   {
     id: 'booth-1',
     number: 1,
@@ -19,7 +96,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '🤖',
     badge: 'AI & LLM',
     description: 'Explore neural architectures, prompt engineering, RAG, and frontier models.',
-    questions: booth1Questions as QuizQuestion[],
+    fallbackQuestions: booth1Questions as QuizQuestion[],
   },
   {
     id: 'booth-2',
@@ -29,7 +106,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '☁️',
     badge: 'Cloud & K8s',
     description: 'Master microservices orchestration, auto-scaling, serverless, and mesh topologies.',
-    questions: booth2Questions as QuizQuestion[],
+    fallbackQuestions: booth2Questions as QuizQuestion[],
   },
   {
     id: 'booth-3',
@@ -39,7 +116,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '🛡️',
     badge: 'Security',
     description: 'Verify every request, defend supply chains, and master cryptographic principles.',
-    questions: booth3Questions as QuizQuestion[],
+    fallbackQuestions: booth3Questions as QuizQuestion[],
   },
   {
     id: 'booth-4',
@@ -49,7 +126,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '📊',
     badge: 'Data & Analytics',
     description: 'Tackle real-time streaming, vector stores, ACID transactions, and ELT pipelines.',
-    questions: booth4Questions as QuizQuestion[],
+    fallbackQuestions: booth4Questions as QuizQuestion[],
   },
   {
     id: 'booth-5',
@@ -59,7 +136,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '⚙️',
     badge: 'DevOps & SRE',
     description: 'Accelerate continuous delivery, observability pillars, and error budget management.',
-    questions: booth5Questions as QuizQuestion[],
+    fallbackQuestions: booth5Questions as QuizQuestion[],
   },
   {
     id: 'booth-6',
@@ -69,7 +146,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '🏛️',
     badge: 'Architecture',
     description: 'Design decoupled event-driven systems, resilient gateways, and scalable patterns.',
-    questions: booth6Questions as QuizQuestion[],
+    fallbackQuestions: booth6Questions as QuizQuestion[],
   },
   {
     id: 'booth-7',
@@ -79,7 +156,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '📡',
     badge: 'IoT & Edge',
     description: 'Harness low-latency computation, digital twins, and lightweight protocols.',
-    questions: booth7Questions as QuizQuestion[],
+    fallbackQuestions: booth7Questions as QuizQuestion[],
   },
   {
     id: 'booth-8',
@@ -89,7 +166,7 @@ export const BOOTHS: BoothConfig[] = [
     icon: '🔗',
     badge: 'Web3 & Blockchain',
     description: 'Uncover smart contracts, decentralized state, rollups, and zero-knowledge proofs.',
-    questions: booth8Questions as QuizQuestion[],
+    fallbackQuestions: booth8Questions as QuizQuestion[],
   },
   {
     id: 'booth-9',
@@ -99,9 +176,25 @@ export const BOOTHS: BoothConfig[] = [
     icon: '⚛️',
     badge: 'Quantum & Frontiers',
     description: 'Leap into superposition, entanglement, quantum speedups, and future horizons.',
-    questions: booth9Questions as QuizQuestion[],
+    fallbackQuestions: booth9Questions as QuizQuestion[],
   },
 ];
+
+export const BOOTHS: BoothConfig[] = BOOTH_DEFINITIONS.map((def) => {
+  const topics = getTopicsForBooth(def.id);
+  const questions = topics.length > 0 && topics[0].questions.length > 0 ? topics[0].questions : def.fallbackQuestions;
+  return {
+    id: def.id,
+    number: def.number,
+    title: def.title,
+    category: def.category,
+    icon: def.icon,
+    badge: def.badge,
+    description: def.description,
+    topics,
+    questions,
+  };
+});
 
 export const REQUIRED_BOOTHS_TO_WIN = 4;
 export const TOTAL_BOOTHS = 9;

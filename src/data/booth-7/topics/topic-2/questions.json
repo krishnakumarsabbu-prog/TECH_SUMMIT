@@ -1,0 +1,71 @@
+{
+  "title": "Edge AI Inference & Digital Twins",
+  "description": "Embedded deep learning inference, model quantization (INT8), local analytics, and real-time digital twin state sync.",
+  "questions": [
+    {
+      "id": "b7_t2_q1",
+      "category": "Digital Twins",
+      "difficulty": "hard",
+      "question": "What is a 'Digital Twin' in modern Industrial IoT (IIoT)?",
+      "options": [
+        "A real-time virtual digital representation of a physical asset or industrial process",
+        "A backup USB drive kept in the factory office safe",
+        "Two identical microcontrollers soldered to the same circuit board",
+        "An automated bot account operating on social media"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b7_t2_q2",
+      "category": "Edge AI",
+      "difficulty": "medium",
+      "question": "Why is model quantization (e.g., FP32 to INT8) essential for edge device inference?",
+      "options": [
+        "Reduces memory footprint and computational latency to run on low-power accelerators",
+        "Converts neural network weights into human-readable JSON files",
+        "Enables wireless charging through radio frequency harvesting",
+        "Prevents edge microcontrollers from requiring an operating system"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b7_t2_q3",
+      "category": "Edge AI",
+      "difficulty": "medium",
+      "question": "Which edge hardware accelerator is commonly used for high-efficiency neural network inference at the edge?",
+      "options": [
+        "NPU (Neural Processing Unit) / Edge TPU",
+        "Rotational Magnetic Tape Drive",
+        "Standard Audio Sound Card",
+        "Parallel Printer Port"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b7_t2_q4",
+      "category": "Edge Computing",
+      "difficulty": "hard",
+      "question": "What is 'Fog Computing' in relation to edge and cloud topologies?",
+      "options": [
+        "A decentralized computing layer situated between edge IoT devices and centralized cloud data centers",
+        "Running servers in refrigerated climate-controlled containers",
+        "Streaming data only during stormy or overcast weather conditions",
+        "Encrypting packets using random pseudo-noise headers"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b7_t2_q5",
+      "category": "Edge Security",
+      "difficulty": "medium",
+      "question": "What hardware component secures cryptographic keys and roots of trust on edge IoT hardware?",
+      "options": [
+        "TPM (Trusted Platform Module) / Secure Element",
+        "MicroSD Flash Card",
+        "Capacitive Touchscreen Controller",
+        "Linear Voltage Regulator"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

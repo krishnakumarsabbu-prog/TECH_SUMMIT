@@ -1,0 +1,71 @@
+{
+  "title": "Data Lakehouse & Modern ETL Architecture",
+  "description": "Explore Delta Lake, Apache Iceberg, ACID transactions on object storage, and ELT transformations.",
+  "questions": [
+    {
+      "id": "b4_t1_q1",
+      "category": "Data Engineering",
+      "difficulty": "medium",
+      "question": "Which ACID property guarantees that a database transaction is either fully completed or completely rolled back?",
+      "options": [
+        "Atomicity",
+        "Consistency",
+        "Isolation",
+        "Durability"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t1_q2",
+      "category": "Data Engineering",
+      "difficulty": "medium",
+      "question": "What is the key difference between ETL and ELT data processing pipelines?",
+      "options": [
+        "In ELT, data is transformed inside the destination data warehouse after loading",
+        "In ELT, data is never stored in persistent storage",
+        "In ETL, data is loaded into memory without extraction",
+        "ELT can only handle uncompressed text files"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t1_q3",
+      "category": "Data Engineering",
+      "difficulty": "medium",
+      "question": "What architectural pattern combines the ACID transactions of data warehouses with the low-cost flexibility of data lakes?",
+      "options": [
+        "Data Lakehouse",
+        "Monolithic Data Silo",
+        "Flat File Staging Area",
+        "Raw Blob Cache"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t1_q4",
+      "category": "Data Formats",
+      "difficulty": "medium",
+      "question": "Why is Apache Parquet preferred over CSV for analytical queries?",
+      "options": [
+        "It stores data columnarly with dictionary encoding, enabling high compression and column projection pushdown",
+        "It is plain human-readable text that can be viewed in notepad",
+        "It automatically prevents all duplicate primary keys without index overhead",
+        "It requires zero CPU deserialization time"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t1_q5",
+      "category": "Data Engineering",
+      "difficulty": "hard",
+      "question": "What problem does table partitioning solve in large distributed datasets?",
+      "options": [
+        "It allows query engines to skip reading irrelevant data directories (partition pruning)",
+        "It replaces the need for data backups",
+        "It automatically converts relational data into GraphQL APIs",
+        "It forces all queries to run in single-thread memory"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

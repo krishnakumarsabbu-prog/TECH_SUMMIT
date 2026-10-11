@@ -56,6 +56,7 @@ export function buildSubmission(
       boothId: quizState.boothId,
       boothNumber: quizState.boothNumber || 1,
       boothTitle: quizState.boothTitle || 'Technology Challenge',
+      topicTitle: quizState.topicTitle,
       boothsCompletedSoFar,
       isPrizeEligible: boothsCompletedSoFar >= 4,
     } : undefined,

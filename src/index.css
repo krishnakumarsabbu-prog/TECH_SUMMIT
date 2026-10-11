@@ -375,6 +375,15 @@ html, body {
   color: var(--text-muted);
 }
 
+.ts-field__select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234A4A52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
 .ts-field__error {
   font-size: 13px;
   color: var(--error);
@@ -1395,6 +1404,62 @@ html, body {
   text-align: center;
 }
 
+.ts-booth-scan-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--brand-red);
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+}
+
+.ts-booth-scan-btn:hover {
+  background: var(--brand-red-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.ts-booth-scan-btn:active {
+  transform: translateY(0);
+}
+
+.ts-passport-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.ts-passport-edit-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.ts-passport-edit-btn:hover {
+  background: var(--surface-alt);
+  color: var(--brand-red);
+  border-color: var(--brand-red);
+}
+
 .ts-passport-actions {
   margin-top: 32px;
 }
@@ -1905,6 +1970,143 @@ html, body {
 
 .ts-scanner-toast--error {
   background: #B3192B;
+}
+
+/* ===== Topic Selection Screen ===== */
+.ts-page--topics {
+  padding-bottom: 40px;
+}
+
+.ts-topics-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.ts-topics-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(179, 25, 43, 0.08);
+  border: 1px solid rgba(179, 25, 43, 0.2);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-red);
+  margin-bottom: 12px;
+}
+
+.ts-topics-rotation-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(247, 201, 72, 0.15) 0%, rgba(179, 25, 43, 0.06) 100%);
+  border: 1.5px solid rgba(247, 201, 72, 0.5);
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.ts-rotation-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.ts-rotation-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--brand-red);
+  margin-bottom: 4px;
+}
+
+.ts-rotation-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ts-topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.ts-topic-card {
+  background: #FFFFFF;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ts-topic-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-red);
+}
+
+.ts-topic-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ts-topic-card__index {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--brand-red);
+  background: rgba(179, 25, 43, 0.08);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.ts-topic-card__count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.ts-topic-card__title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.ts-topic-card__desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+.ts-topic-card__action {
+  margin-top: auto;
+}
+
+.ts-topics-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.ts-booth-card__topic-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand-red);
+  margin-bottom: 8px;
 }
 
 

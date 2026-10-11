@@ -1,0 +1,71 @@
+{
+  "title": "Service Mesh & Ingress Controllers",
+  "description": "Explore Istio, Envoy sidecar proxies, mutual TLS (mTLS), and layer-7 traffic splitting.",
+  "questions": [
+    {
+      "id": "b2_t2_q1",
+      "category": "Service Mesh",
+      "difficulty": "medium",
+      "question": "What is the primary role of a sidecar proxy (e.g., Envoy) in a Service Mesh architecture?",
+      "options": [
+        "Intercepting all incoming and outgoing service network traffic for telemetry and mTLS",
+        "Managing the persistent storage volumes attached to stateful pods",
+        "Compiling Dockerfiles directly on cluster worker nodes",
+        "Generating Kubernetes manifests from Helm templates"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b2_t2_q2",
+      "category": "Service Mesh",
+      "difficulty": "medium",
+      "question": "Which security protocol does a service mesh utilize to ensure end-to-end encryption and service identity verification?",
+      "options": [
+        "Mutual TLS (mTLS)",
+        "SSH Tunneling",
+        "IPsec ESP Only",
+        "SOCKS5 Proxying"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b2_t2_q3",
+      "category": "Ingress Routing",
+      "difficulty": "hard",
+      "question": "What Kubernetes resource defines Layer 7 routing rules to expose HTTP/S routes from outside the cluster to internal services?",
+      "options": [
+        "Ingress / Gateway API",
+        "ClusterIP Service",
+        "NetworkPolicy",
+        "EndpointsSlice"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b2_t2_q4",
+      "category": "Traffic Management",
+      "difficulty": "medium",
+      "question": "Which deployment strategy routes a small percentage (e.g., 5%) of production traffic to a new version before full rollout?",
+      "options": [
+        "Canary Deployment",
+        "Recreate Deployment",
+        "Blue-Green Switching",
+        "Cold Standby"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b2_t2_q5",
+      "category": "Service Mesh",
+      "difficulty": "hard",
+      "question": "What pattern prevents cascading service failures by immediately failing fast when a downstream dependency is unhealthy?",
+      "options": [
+        "Circuit Breaker Pattern",
+        "Saga Pattern",
+        "Strangler Fig Pattern",
+        "Event Sourcing"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

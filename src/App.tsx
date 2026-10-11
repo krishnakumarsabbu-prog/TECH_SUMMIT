@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { AppStage, Participant, QuizState, QuizResult, BoothConfig, BoothResult } from './types';
+import type { AppStage, Participant, QuizState, QuizResult, BoothConfig, BoothResult, BoothTopic } from './types';
 import { Header } from './components/Header';
 import { Layout } from './components/Layout';
 import { Welcome } from './pages/Welcome';
 import { ParticipantDetails } from './pages/ParticipantDetails';
+import { TopicSelection } from './pages/TopicSelection';
 import { Quiz } from './pages/Quiz';
 import { Results } from './pages/Results';
 import { AlreadyPlayed } from './pages/AlreadyPlayed';
@@ -25,7 +26,7 @@ import {
   isTestMode,
   getBoothParamFromUrl,
 } from './utils/storage';
-import { getBoothById, BOOTHS, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
+import { getBoothById, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
 
 const QUESTION_COUNT = 5;
 
@@ -84,8 +85,8 @@ export default function App() {
         return;
       }
 
-      // User registered and booth not yet played: launch quiz directly!
-      startBoothQuiz(matchedBooth);
+      // User registered and booth not yet played: show topic selection!
+      setStage('TOPIC_SELECTION');
       return;
     }
 
@@ -103,18 +104,17 @@ export default function App() {
       }
     }
 
-    // If no specific booth in URL:
-    // If attendee is registered and has played at least one booth, show their Passport!
-    if (savedParticipant && Object.keys(savedResults).length > 0) {
+    // If attendee is registered, show their Passport!
+    if (savedParticipant) {
       setStage('PASSPORT');
       return;
     }
 
-    // Otherwise show Welcome screen
-    setStage('WELCOME');
+    // Unregistered: directly show Registration page
+    setStage('PARTICIPANT');
   }, []);
 
-  const startBoothQuiz = useCallback((booth: BoothConfig) => {
+  const startBoothQuiz = useCallback((booth: BoothConfig, topic?: BoothTopic) => {
     // Guard: Prevent starting any booth that has already been completed
     if (hasPlayedBooth(booth.id)) {
       setCurrentBoothResult(getBoothResult(booth.id));
@@ -124,13 +124,17 @@ export default function App() {
     }
 
     try {
-      const prepared = prepareQuestions(booth.questions, QUESTION_COUNT);
+      const pool = topic?.questions && topic.questions.length > 0 ? topic.questions : booth.questions;
+      const count = Math.min(QUESTION_COUNT, pool.length);
+      const prepared = prepareQuestions(pool, count);
       const newQuiz: QuizState = {
         boothId: booth.id,
         boothNumber: booth.number,
         boothTitle: booth.title,
+        topicId: topic?.id,
+        topicTitle: topic?.title,
         questions: prepared,
-        answers: new Array(QUESTION_COUNT).fill(null),
+        answers: new Array(prepared.length).fill(null),
         currentIndex: 0,
         startTime: Date.now(),
         endTime: null,
@@ -145,39 +149,25 @@ export default function App() {
     }
   }, []);
 
-  const handleStartFromWelcome = useCallback(() => {
-    const booth = targetBooth || BOOTHS[0];
-    if (hasPlayedBooth(booth.id)) {
-      setCurrentBoothResult(getBoothResult(booth.id));
-      setTargetBooth(booth);
-      setStage('ALREADY_PLAYED');
-      return;
-    }
+  const handleTopicSelect = useCallback((topic: BoothTopic) => {
+    if (!targetBooth) return;
+    startBoothQuiz(targetBooth, topic);
+  }, [targetBooth, startBoothQuiz]);
 
+  const handleStartFromWelcome = useCallback(() => {
     if (!participant) {
-      setTargetBooth(booth);
       setStage('PARTICIPANT');
       return;
     }
-
-    startBoothQuiz(booth);
-  }, [targetBooth, participant, startBoothQuiz]);
+    setStage('PASSPORT');
+  }, [participant]);
 
   const handleParticipantRegister = useCallback((p: Participant) => {
     setParticipant(p);
     saveParticipant(p);
-
-    // If an active booth was scanned, seamlessly launch its quiz!
-    const booth = targetBooth || BOOTHS[0];
-    if (hasPlayedBooth(booth.id)) {
-      setCurrentBoothResult(getBoothResult(booth.id));
-      setTargetBooth(booth);
-      setStage('ALREADY_PLAYED');
-      return;
-    }
-
-    startBoothQuiz(booth);
-  }, [targetBooth, startBoothQuiz]);
+    // After registration, go directly to passport page where attendee can decide which booth to play!
+    setStage('PASSPORT');
+  }, []);
 
   const handleAnswer = useCallback((questionIndex: number, answerIndex: number) => {
     setQuizState((prev) => {
@@ -275,6 +265,8 @@ export default function App() {
         boothId: persisted.boothId,
         boothNumber: persisted.boothNumber,
         boothTitle: persisted.boothTitle,
+        topicId: persisted.topicId,
+        topicTitle: persisted.topicTitle,
         completedAt: new Date().toISOString(),
         answers: answersList,
       };
@@ -322,8 +314,9 @@ export default function App() {
       return;
     }
 
-    startBoothQuiz(booth);
-  }, [participant, startBoothQuiz]);
+    // Direct user to topic selection screen to choose active 20-minute topic!
+    setStage('TOPIC_SELECTION');
+  }, [participant]);
 
   const handleOpenScannedUrl = useCallback((url: string) => {
     window.location.href = url;
@@ -338,7 +331,7 @@ export default function App() {
     setBoothResults({});
     setTargetBooth(null);
     setDownloadError(null);
-    setStage('WELCOME');
+    setStage('PARTICIPANT');
   }, []);
 
   const completedCount = Object.keys(boothResults).length;
@@ -378,7 +371,15 @@ export default function App() {
             initialData={participant}
             targetBooth={targetBooth}
             onContinue={handleParticipantRegister}
-            onBack={() => setStage('WELCOME')}
+            onBack={participant ? () => setStage('PASSPORT') : () => setStage('WELCOME')}
+          />
+        )}
+
+        {!loadError && stage === 'TOPIC_SELECTION' && targetBooth && (
+          <TopicSelection
+            booth={targetBooth}
+            onSelectTopic={handleTopicSelect}
+            onBack={() => setStage('PASSPORT')}
           />
         )}
 
@@ -423,6 +424,7 @@ export default function App() {
             hasActiveQuiz={Boolean(quizState)}
             onLaunchBooth={handleLaunchBoothFromPassport}
             onOpenUrl={handleOpenScannedUrl}
+            onEditProfile={() => setStage('PARTICIPANT')}
           />
         )}
 

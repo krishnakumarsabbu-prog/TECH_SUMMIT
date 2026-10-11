@@ -1,0 +1,71 @@
+{
+  "title": "Real-Time Streaming & Vector Search Stores",
+  "description": "Master Apache Kafka event logs, Apache Flink stateful stream processing, and high-dimensional vector retrieval.",
+  "questions": [
+    {
+      "id": "b4_t2_q1",
+      "category": "Streaming",
+      "difficulty": "easy",
+      "question": "Which open-source distributed event store is widely used for high-throughput, real-time data streaming?",
+      "options": [
+        "Apache Kafka",
+        "SQLite",
+        "Microsoft Access",
+        "Memcached"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t2_q2",
+      "category": "Vector Stores",
+      "difficulty": "hard",
+      "question": "Why are Vector Databases (like Pinecone, Milvus, or Qdrant) critical for AI applications?",
+      "options": [
+        "They perform fast approximate nearest neighbor (ANN) search over high-dimensional embeddings",
+        "They replace relational databases for standard accounting ledgers",
+        "They allow streaming MPEG-4 video directly from RAM",
+        "They convert SQL queries into machine assembly code"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t2_q3",
+      "category": "Streaming",
+      "difficulty": "hard",
+      "question": "In Apache Kafka, what provides total ordering of message events?",
+      "options": [
+        "Within an individual partition of a topic",
+        "Globally across all topics in the entire cluster",
+        "Across consumer group offsets simultaneously",
+        "Through ZooKeeper/KRaft metadata broadcast only"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t2_q4",
+      "category": "Stream Processing",
+      "difficulty": "hard",
+      "question": "What is 'Event Time' processing in stream engines like Apache Flink?",
+      "options": [
+        "Processing data based on the timestamp when the event actually occurred at the source",
+        "Processing data based on the wall-clock time of the worker node executing the task",
+        "Scheduling queries to execute only once every 24 hours at midnight",
+        "Throttling event throughput to match database write limits"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b4_t2_q5",
+      "category": "Data Governance",
+      "difficulty": "medium",
+      "question": "What is a 'Data Contract' in modern data mesh architectures?",
+      "options": [
+        "An agreement between data producers and consumers defining schema, SLA, semantics, and quality expectations",
+        "A legal licensing agreement between cloud storage vendors",
+        "A blockchain smart contract paying data engineers per query",
+        "A hardware warranty covering flash drive longevity"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

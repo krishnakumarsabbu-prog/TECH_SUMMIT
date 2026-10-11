@@ -1,0 +1,71 @@
+{
+  "title": "Kubernetes Core & Pod Lifecycle",
+  "description": "Master kube-apiserver, etcd quorum, container lifecycle hooks, and resource quotas.",
+  "questions": [
+    {
+      "id": "b2_t1_q1",
+      "category": "Cloud & Kubernetes",
+      "difficulty": "medium",
+      "question": "What is the smallest deployable compute unit in Kubernetes that can contain one or more containers?",
+      "options": [
+        "ReplicaSet",
+        "Pod",
+        "DaemonSet",
+        "ConfigMap"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "b2_t1_q2",
+      "category": "Cloud & Kubernetes",
+      "difficulty": "medium",
+      "question": "Which Kubernetes resource provides declarative updates for Pods and ReplicaSets?",
+      "options": [
+        "Deployment",
+        "Job",
+        "StatefulSet",
+        "CronJob"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b2_t1_q3",
+      "category": "Cloud & Kubernetes",
+      "difficulty": "hard",
+      "question": "Which component in Kubernetes acts as the sole consistent, distributed key-value store for cluster state?",
+      "options": [
+        "etcd",
+        "kube-scheduler",
+        "kube-proxy",
+        "CoreDNS"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b2_t1_q4",
+      "category": "Cloud & Kubernetes",
+      "difficulty": "medium",
+      "question": "What happens when a Pod exceeds its configured memory 'limit'?",
+      "options": [
+        "It is terminated by the kernel with an OOMKilled status",
+        "Its CPU allocation is automatically throttled by cgroups",
+        "It is migrated to another node with lower memory utilization",
+        "Kubernetes swaps its pages to local ephemeral SSD disk"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b2_t1_q5",
+      "category": "Cloud & Kubernetes",
+      "difficulty": "hard",
+      "question": "Which probe determines whether a container is ready to accept incoming network traffic?",
+      "options": [
+        "Readiness Probe",
+        "Liveness Probe",
+        "Startup Probe",
+        "Drain Probe"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

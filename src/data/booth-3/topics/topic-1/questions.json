@@ -1,0 +1,71 @@
+{
+  "title": "Zero Trust Architecture & Identity",
+  "description": "Never trust, always verify: explore continuous identity verification, MFA, and least-privilege access.",
+  "questions": [
+    {
+      "id": "b3_t1_q1",
+      "category": "Zero Trust",
+      "difficulty": "medium",
+      "question": "What is the core philosophical tenet of a 'Zero Trust' security architecture?",
+      "options": [
+        "Never trust, always verify every request regardless of location",
+        "Trust all internal traffic originating from the corporate VPN",
+        "Disable all SSL/TLS encryption for internal microservices",
+        "Use single-factor passwords for internal enterprise tools"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b3_t1_q2",
+      "category": "Identity Security",
+      "difficulty": "easy",
+      "question": "What is Multi-Factor Authentication (MFA) designed to prevent?",
+      "options": [
+        "Unauthorized account access resulting from compromised single passwords",
+        "High network latency during database queries",
+        "Buffer overflow in compiled C programs",
+        "Overheating of mobile phone batteries"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b3_t1_q3",
+      "category": "Identity Security",
+      "difficulty": "medium",
+      "question": "What does the Principle of Least Privilege (PoLP) dictate?",
+      "options": [
+        "Entities are granted only the minimum permissions necessary to perform their authorized tasks",
+        "Every developer account has root privileges to eliminate deployment roadblocks",
+        "Passwords must be kept under 6 characters to improve login speed",
+        "All data stores must be accessible by default without credentials"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b3_t1_q4",
+      "category": "Zero Trust",
+      "difficulty": "hard",
+      "question": "What is 'Micro-segmentation' in network security?",
+      "options": [
+        "Creating granular, secure zones in data centers and cloud deployments to isolate workloads and limit lateral movement",
+        "Splitting monolithic web servers into React micro-frontends",
+        "Compressing TCP packet payloads into smaller sub-byte headers",
+        "Rotating DNS names every 5 seconds across edge POPs"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b3_t1_q5",
+      "category": "Cryptography",
+      "difficulty": "medium",
+      "question": "In cryptographic systems, what distinguishes Asymmetric encryption from Symmetric encryption?",
+      "options": [
+        "Asymmetric uses a key pair (public & private), symmetric uses a single shared key",
+        "Asymmetric encryption cannot be decrypted once encrypted",
+        "Symmetric encryption is only usable for audio files",
+        "Asymmetric algorithms do not require mathematical operations"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

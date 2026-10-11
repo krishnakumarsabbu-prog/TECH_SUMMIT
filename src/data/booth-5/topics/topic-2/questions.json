@@ -1,0 +1,71 @@
+{
+  "title": "SRE Reliability, Error Budgets & Observability",
+  "description": "Master SLIs, SLOs, allowable error margins, distributed tracing with OpenTelemetry, and chaos engineering.",
+  "questions": [
+    {
+      "id": "b5_t2_q1",
+      "category": "SRE",
+      "difficulty": "hard",
+      "question": "In Site Reliability Engineering (SRE), what does an 'Error Budget' represent?",
+      "options": [
+        "The allowable margin of unreliability before engineering priorities shift from features to reliability",
+        "The total financial penalty paid to cloud providers for outages",
+        "The maximum number of bugs a developer is permitted to write per sprint",
+        "The annual IT budget reserved for buying replacement hard drives"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b5_t2_q2",
+      "category": "Observability",
+      "difficulty": "medium",
+      "question": "What are the three core pillars of system Observability?",
+      "options": [
+        "Metrics, Logs, and Distributed Traces",
+        "Backups, Firewalls, and Antivirus",
+        "Passwords, Keys, and Certificates",
+        "CPU, RAM, and Disk Space"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b5_t2_q3",
+      "category": "SRE",
+      "difficulty": "medium",
+      "question": "What is the difference between an SLI and an SLO?",
+      "options": [
+        "An SLI is a quantifiable metric of service level; an SLO is the target objective set for that metric",
+        "An SLI is a legal contract with customers; an SLO is an internal recommendation",
+        "An SLI measures CPU utilization; an SLO measures code complexity",
+        "There is no difference; they are interchangeable terms"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b5_t2_q4",
+      "category": "Observability",
+      "difficulty": "hard",
+      "question": "What does OpenTelemetry (OTel) provide for cloud-native microservice architectures?",
+      "options": [
+        "A vendor-neutral collection framework and specification for generating telemetry traces, metrics, and logs",
+        "An automated SQL database indexing engine",
+        "A load balancing proxy replacing NGINX and HAProxy",
+        "A real-time virus scanner for container images"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b5_t2_q5",
+      "category": "SRE",
+      "difficulty": "medium",
+      "question": "What is the primary goal of Chaos Engineering (e.g. Chaos Mesh, Gremlin)?",
+      "options": [
+        "Proactively injecting turbulent failures into systems to reveal hidden weaknesses before outages occur",
+        "Purposely corrupting production backups to test disaster recovery speeds",
+        "Randomizing user interface button colors to test engagement",
+        "Running multiple competing versions of databases simultaneously"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

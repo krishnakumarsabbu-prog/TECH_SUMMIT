@@ -1,0 +1,71 @@
+{
+  "title": "Layer-2 Rollups & Zero-Knowledge Cryptography",
+  "description": "Master off-chain scaling with Optimistic Rollups, ZK-SNARKs, state fraud proofs, and modular blockchains.",
+  "questions": [
+    {
+      "id": "b8_t2_q1",
+      "category": "Layer-2",
+      "difficulty": "hard",
+      "question": "In Layer-2 scaling solutions, how do 'Rollups' (Optimistic or ZK) scale throughput on base chains (Layer 1)?",
+      "options": [
+        "By executing transactions off-chain and posting aggregated proofs and compressed data to Layer 1",
+        "By deleting older historical transactions after 30 days",
+        "By replacing public cryptography with shared enterprise passwords",
+        "By requiring miners to double their GPU clock frequencies"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b8_t2_q2",
+      "category": "ZK Proofs",
+      "difficulty": "medium",
+      "question": "What does 'Zero-Knowledge Proof' (ZKP) allow one party to prove to another?",
+      "options": [
+        "That a statement is true without revealing any information beyond the validity of the statement itself",
+        "That the sender has zero tokens in their wallet",
+        "That the network contains zero latency between peer nodes",
+        "That a database table contains zero rows"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b8_t2_q3",
+      "category": "Rollups",
+      "difficulty": "medium",
+      "question": "What is the core difference between Optimistic Rollups and ZK-Rollups?",
+      "options": [
+        "Optimistic assumes transactions are valid unless challenged via fraud proofs; ZK uses cryptographic validity proofs (SNARKs/STARKs)",
+        "Optimistic rollups do not connect to Ethereum Layer 1",
+        "ZK-Rollups take 7 days for transaction finality while Optimistic takes 1 millisecond",
+        "Optimistic rollups can only process Bitcoin payments"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b8_t2_q4",
+      "category": "Data Availability",
+      "difficulty": "hard",
+      "question": "What is the 'Data Availability Problem' in modular rollup architectures?",
+      "options": [
+        "Ensuring all nodes have access to the underlying transaction data needed to reconstruct and verify the state",
+        "Running out of disk space on local mobile wallets",
+        "Restricting internet access in developing regions",
+        "Encrypting hard drives before shipping to data centers"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "b8_t2_q5",
+      "category": "Web3 Security",
+      "difficulty": "medium",
+      "question": "What is a 'Sybil Attack' on peer-to-peer distributed networks?",
+      "options": [
+        "An adversary subverting the network by creating multiple pseudo-identities to gain disproportionate influence",
+        "Stealing private keys by eavesdropping on Bluetooth headsets",
+        "Deleting CSS stylesheets from a frontend CDN",
+        "Overheating cooling fans on ASIC mining equipment"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

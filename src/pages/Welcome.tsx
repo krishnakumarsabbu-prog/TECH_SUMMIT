@@ -74,12 +74,12 @@ export function Welcome({
           <Button onClick={hasSavedQuiz ? onResume : onStart} fullWidth>
             {hasSavedQuiz
               ? 'RESUME CURRENT QUIZ'
-              : targetBooth
-              ? `START BOOTH ${targetBooth.number} QUIZ`
-              : 'ENTER THE CHALLENGE'}
+              : participant
+              ? 'VIEW PASSPORT & BOOTHS'
+              : 'PROCEED TO REGISTRATION'}
           </Button>
 
-          {completedCount > 0 && (
+          {participant && (
             <Button variant="secondary" onClick={onOpenPassport} fullWidth>
               {isWinner ? '🏆 VIEW WINNER PASSPORT' : `📊 VIEW PROGRESS (${completedCount}/${REQUIRED_BOOTHS_TO_WIN})`}
             </Button>
