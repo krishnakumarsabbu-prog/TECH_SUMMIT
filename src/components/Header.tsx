@@ -3,6 +3,7 @@ interface HeaderProps {
   isWinner?: boolean;
   onOpenPassport?: () => void;
   isPassportActive?: boolean;
+  onGoHome?: () => void;
 }
 
 export function Header({
@@ -10,23 +11,29 @@ export function Header({
   isWinner = false,
   onOpenPassport,
   isPassportActive = false,
+  onGoHome,
 }: HeaderProps) {
   return (
     <header className="ts-header" role="banner">
       <div className="ts-header__inner">
-        <div className="ts-header__brand">
+        <div
+          className="ts-header__brand"
+          onClick={onGoHome}
+          style={onGoHome ? { cursor: 'pointer' } : undefined}
+          title={onGoHome ? 'Go to Innovation Showcase 2026 landing page' : undefined}
+        >
           <span className="ts-header__accent" aria-hidden="true" />
           <div className="ts-header__copy">
             <span className="ts-header__company">WELLSFARGO</span>
             <span className="ts-header__title">
-              Technology Summit <strong>- 2026</strong>
+              Innovation Showcase <strong>- 2026</strong>
             </span>
           </div>
         </div>
 
         <div className="ts-header__right">
           <span className="ts-header__tagline">
-            INNOVATION <i aria-hidden="true" /> CONNECTION <i aria-hidden="true" /> IMPACT
+            INNOVATE <i aria-hidden="true" /> ADOPT <i aria-hidden="true" /> REUSE
           </span>
 
           {onOpenPassport && (

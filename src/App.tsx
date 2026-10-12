@@ -112,8 +112,8 @@ export default function App() {
       return;
     }
 
-    // Unregistered: directly show Registration page
-    setStage('PARTICIPANT');
+    // Unregistered: show Innovation Showcase landing page
+    setStage('WELCOME');
   }, []);
 
   const startBoothQuiz = useCallback((booth: BoothConfig, topic?: BoothTopic) => {
@@ -352,6 +352,7 @@ export default function App() {
         isWinner={isWinner}
         onOpenPassport={participant ? handleOpenPassport : undefined}
         isPassportActive={stage === 'PASSPORT'}
+        onGoHome={() => setStage('WELCOME')}
       />
       <Layout>
         {loadError && (
@@ -371,6 +372,7 @@ export default function App() {
             onResume={() => setStage('QUIZ')}
             hasSavedQuiz={!!getQuizState()}
             onOpenPassport={() => setStage('PASSPORT')}
+            onSelectBooth={handleLaunchBoothFromPassport}
           />
         )}
 

@@ -45,7 +45,14 @@
 
 html, body {
   font-family: var(--font-sans);
-  background: var(--surface-muted);
+  background-color: #080d21;
+  background-image:
+    radial-gradient(circle at 50% 12%, rgba(18, 34, 76, 0.82) 0%, rgba(8, 13, 33, 0.95) 70%),
+    url('/innovation-showcase-bg.jpg');
+  background-attachment: fixed;
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -160,11 +167,13 @@ html, body {
 }
 
 .ts-page__container {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: var(--radius-lg);
   padding: 36px 28px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 .ts-page__container--wide {
@@ -2107,6 +2116,440 @@ html, body {
   font-weight: 700;
   color: var(--brand-red);
   margin-bottom: 8px;
+}
+
+/* =========================================================
+   INNOVATION SHOWCASE 2026 POSTER THEME & LANDING STYLES
+   ========================================================= */
+
+.ts-page--welcome {
+  width: 100%;
+}
+
+/* 1. Official Poster Card */
+.ts-poster-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background-color: #080d21;
+  background-image:
+    linear-gradient(180deg, rgba(7, 13, 31, 0.76) 0%, rgba(9, 16, 40, 0.12) 28%, rgba(9, 16, 40, 0.22) 62%, rgba(6, 11, 26, 0.92) 100%),
+    url('/innovation-showcase-hero.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  min-height: 620px;
+  padding: 36px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(5, 10, 24, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(247, 201, 72, 0.25);
+  animation: ts-fade-in 0.4s ease;
+}
+
+.ts-poster-card__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(247, 201, 72, 0.08) 0%, transparent 60%);
+}
+
+.ts-poster-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.ts-poster-brand {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.8px;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.ts-poster-title {
+  font-size: clamp(28px, 6.5vw, 40px);
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin-bottom: 6px;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.85);
+}
+
+.ts-poster-location {
+  font-size: clamp(14px, 3.5vw, 18px);
+  font-weight: 600;
+  color: #E2E8F0;
+  letter-spacing: 0.8px;
+  margin-bottom: 14px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+}
+
+.ts-poster-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #F7C948;
+  color: #111827;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 6px 20px;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(247, 201, 72, 0.4);
+  text-transform: uppercase;
+}
+
+/* Center Focal Area */
+.ts-poster-center {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  margin: 24px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.ts-poster-spark-aura {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(247, 201, 72, 0.35) 0%, rgba(56, 189, 248, 0.15) 45%, transparent 70%);
+  animation: ts-poster-sparkle 3s ease-in-out infinite alternate;
+}
+
+@keyframes ts-poster-sparkle {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+.ts-poster-scanned-booth {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(247, 201, 72, 0.45);
+  border-radius: 14px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  max-width: 440px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  animation: ts-pop 0.3s ease;
+}
+
+.ts-scanned-icon {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.ts-scanned-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ts-scanned-pill {
+  font-size: 10px;
+  font-weight: 800;
+  color: #F7C948;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.ts-scanned-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 2px 0;
+}
+
+.ts-scanned-sub {
+  font-size: 12px;
+  color: #94A3B8;
+  margin: 0;
+}
+
+/* Schedule Card */
+.ts-poster-schedule {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin: 0 auto 18px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.ts-poster-schedule__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14.5px;
+}
+
+.ts-poster-schedule__label {
+  color: #B3192B;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.ts-poster-schedule__divider {
+  color: #94A3B8;
+  font-weight: 300;
+}
+
+.ts-poster-schedule__date {
+  color: #1A1A1F;
+  font-weight: 600;
+}
+
+.ts-poster-schedule__hr {
+  border: none;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 8px 0;
+}
+
+/* CTA Button */
+.ts-poster-cta-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-poster-cta-btn {
+  width: 100%;
+  max-width: 320px;
+  min-height: 52px;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #B91C1C 100%);
+  color: #FFFFFF;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(220, 38, 38, 0.52), 0 0 0 2px rgba(255, 255, 255, 0.3);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ts-poster-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(220, 38, 38, 0.72), 0 0 0 3px rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, #F87171 0%, #EF4444 50%, #DC2626 100%);
+}
+
+.ts-poster-cta-btn:active {
+  transform: translateY(0);
+}
+
+.ts-poster-user-strip {
+  font-size: 13px;
+  color: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  margin-top: 4px;
+}
+
+.ts-poster-text-link {
+  background: none;
+  border: none;
+  color: #F7C948;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 13px;
+  padding: 0;
+}
+
+.ts-poster-text-link:hover {
+  color: #FFFFFF;
+}
+
+.ts-poster-info-btn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.ts-poster-info-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
+}
+
+/* 2. Interactive 9-Booth Showcase Grid Section */
+.ts-showcase-section {
+  margin-top: 36px;
+  padding: 30px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.ts-showcase-section__header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.ts-showcase-section__title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 6px 0 10px;
+}
+
+.ts-showcase-section__desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+.ts-showcase-booths-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.ts-showcase-booth-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  outline: none;
+}
+
+.ts-showcase-booth-card:hover,
+.ts-showcase-booth-card:focus-visible {
+  border-color: var(--brand-red);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  background: #FFF;
+}
+
+.ts-showcase-booth-card--active {
+  border-color: #F7C948;
+  background: rgba(247, 201, 72, 0.08);
+  box-shadow: 0 0 0 2px #F7C948;
+}
+
+.ts-showcase-booth-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ts-showcase-booth-card__num {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--brand-red);
+  background: rgba(179, 25, 43, 0.08);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.ts-showcase-booth-card__icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.ts-showcase-booth-card__title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.ts-showcase-booth-card__desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ts-showcase-booth-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.ts-showcase-booth-card__badge {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.ts-showcase-booth-card__action {
+  color: var(--brand-red);
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .ts-poster-card {
+    min-height: 520px;
+    padding: 28px 16px 24px;
+  }
+  .ts-showcase-booths-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 
