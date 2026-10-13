@@ -311,7 +311,7 @@ export async function fetchParticipantFromResultRepo(entId: string): Promise<Par
   for (const folder of candidateFolders) {
     try {
       const folderUrl = `https://api.github.com/repos/${repo}/contents/results/${folder}`;
-      const res = await fetch(folderUrl, { headers });
+      const res = await fetch(folderUrl, { headers, cache: 'no-store' });
 
       if (res.ok) {
         const folderFiles = await res.json();
@@ -329,7 +329,7 @@ export async function fetchParticipantFromResultRepo(entId: string): Promise<Par
               try {
                 let regContent = '';
                 if (file.download_url) {
-                  const rRes = await fetch(file.download_url, { headers });
+                  const rRes = await fetch(`${file.download_url}?t=${Date.now()}`, { headers, cache: 'no-store' });
                   if (rRes.ok) regContent = await rRes.text();
                 } else if (file.content) {
                   regContent = fromBase64Utf8(file.content);
@@ -354,7 +354,7 @@ export async function fetchParticipantFromResultRepo(entId: string): Promise<Par
               try {
                 let sContent = '';
                 if (file.download_url) {
-                  const sRes = await fetch(file.download_url, { headers });
+                  const sRes = await fetch(`${file.download_url}?t=${Date.now()}`, { headers, cache: 'no-store' });
                   if (sRes.ok) sContent = await sRes.text();
                 } else if (file.content) {
                   sContent = fromBase64Utf8(file.content);
@@ -406,7 +406,7 @@ export async function fetchParticipantFromResultRepo(entId: string): Promise<Par
               try {
                 let bContent = '';
                 if (file.download_url) {
-                  const bRes = await fetch(file.download_url, { headers });
+                  const bRes = await fetch(`${file.download_url}?t=${Date.now()}`, { headers, cache: 'no-store' });
                   if (bRes.ok) bContent = await bRes.text();
                 } else if (file.content) {
                   bContent = fromBase64Utf8(file.content);
@@ -482,65 +482,8 @@ export async function fetchParticipantFromResultRepo(entId: string): Promise<Par
     }
   }
 
-  // 2. Local backend fallback (http://localhost:3001/api/results?entId=...)
-  try {
-    const localRes = await fetch(`http://localhost:3001/api/results?entId=${cleanId.toUpperCase()}`);
-    if (localRes.ok) {
-      const localData = await localRes.json();
-      if (localData && localData.found && (localData.summary || localData.registration)) {
-        const localSummary = localData.summary || {};
-        const reg = localData.registration || {};
-        const participant: Participant = {
-          name: localSummary.name || reg.name || 'Participant',
-          entId: cleanId.toUpperCase(),
-          lob: localSummary.lob || reg.lob || 'N/A',
-          company: 'Wells Fargo',
-          role: 'Summit Attendee',
-        };
-
-        const boothResults: Record<string, BoothResult> = {};
-        if (Array.isArray(localSummary.tests)) {
-          localSummary.tests.forEach((t: any) => {
-            const boothId = t.boothId || `booth-${t.boothNumber}`;
-            const score = t.score ?? 0;
-            const totalQuestions = t.totalQuestions ?? 5;
-            const correctAnswers = t.correctAnswers ?? score;
-            const incorrectAnswers = t.incorrectAnswers ?? Math.max(0, totalQuestions - correctAnswers);
-            const unansweredAnswers = t.unansweredAnswers ?? 0;
-            const percentage = t.percentage ?? (totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0);
-
-            boothResults[boothId] = {
-              boothId,
-              boothNumber: t.boothNumber || 1,
-              boothTitle: t.boothTitle || `Booth ${t.boothNumber}`,
-              topicTitle: t.topicTitle || 'Standard Topic',
-              topicId: t.topicId,
-              score,
-              totalQuestions,
-              percentage,
-              correctAnswers,
-              incorrectAnswers,
-              unansweredAnswers,
-              timeTakenSeconds: t.timeTakenSeconds ?? 0,
-              completedAt: t.completedAt || new Date().toISOString(),
-              answers: Array.isArray(t.answers) ? t.answers : [],
-            };
-          });
-        }
-
-        console.log(`[Local Result Sync] Found local records for ${cleanId.toUpperCase()}: ${Object.keys(boothResults).length} tests completed.`);
-        return {
-          exists: true,
-          participant,
-          summary: localSummary,
-          boothResults,
-        };
-      }
-    }
-  } catch {
-    // Local server not active
-  }
-
+  // GitHub is the single source of truth — no local server fallback
+  console.info(`[GitHub Result Sync] No existing records found for ${cleanId.toUpperCase()} in TECH_SUMMIT_RESULT.`);
   return { exists: false };
 }
 

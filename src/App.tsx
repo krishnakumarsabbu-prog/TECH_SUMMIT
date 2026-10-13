@@ -151,11 +151,14 @@ export default function App() {
           }
           setStage('PASSPORT');
         }
+        // else: stays at initial WELCOME stage — no explicit call needed
       });
+      // Do NOT call setStage('WELCOME') here — it would flash WELCOME before async resolves
+      return;
     }
 
-    // Unregistered: show Innovation Showcase landing page
-    setStage('WELCOME');
+    // No params, no cache → show the Innovation Showcase landing page
+    // (initial useState value is already 'WELCOME', so no explicit call needed)
   }, []);
 
   const startBoothQuiz = useCallback((booth: BoothConfig, topic?: BoothTopic) => {
@@ -211,30 +214,38 @@ export default function App() {
       setParticipant(p);
       saveParticipant(p);
 
-      if (restoredResults && Object.keys(restoredResults).length > 0) {
-        setBoothResults(restoredResults);
-        saveAllBoothResults(restoredResults);
-        console.log(`[Participant Restore] Restored ${Object.keys(restoredResults).length} booth tests into browser cache for ${p.entId}`);
+      // restoredResults !== undefined means user was found in GitHub (even if they have 0 tests).
+      // Only call registerParticipant for truly NEW users (restoredResults is undefined).
+      if (restoredResults !== undefined) {
+        // Existing user — restore their booth results into browser cache
+        if (Object.keys(restoredResults).length > 0) {
+          setBoothResults(restoredResults);
+          saveAllBoothResults(restoredResults);
+          console.log(`[Passport Restore] Restored ${Object.keys(restoredResults).length} booth test(s) for ${p.entId}`);
+        } else {
+          console.log(`[Passport Restore] Existing user ${p.entId} found in GitHub — 0 tests to restore yet.`);
+        }
       } else {
-        // Sync registration record to Excel (Google Sheets) and GitHub results repository (TECH_SUMMIT_RESULT)
+        // Truly new participant — push registration to GitHub TECH_SUMMIT_RESULT
         registerParticipant(p).catch((err) => {
           console.warn('Registration sync error:', err);
         });
       }
 
-      // If a target booth was scanned and already completed, show already played
+      // If the scanned booth was already completed (in restored results), show AlreadyPlayed
       if (targetBooth && restoredResults && restoredResults[targetBooth.id]) {
         setCurrentBoothResult(restoredResults[targetBooth.id]);
         setStage('ALREADY_PLAYED');
         return;
       }
 
-      if (targetBooth && (!restoredResults || !restoredResults[targetBooth.id])) {
+      // If there's a target booth (from QR scan) and it's not played yet, go straight to quiz
+      if (targetBooth) {
         setStage('TOPIC_SELECTION');
         return;
       }
 
-      // After registration, go directly to passport page where attendee can decide which booth to play!
+      // No specific booth → show passport so attendee can scan any booth they want
       setStage('PASSPORT');
     },
     [targetBooth],
@@ -349,7 +360,7 @@ export default function App() {
 
       const completedCount = Object.keys(updatedBoothResults).length;
 
-      // Submit to Google Sheets (Excel) / server / GitHub result repository (TECH_SUMMIT_RESULT)
+      // Submit to GitHub result repository (TECH_SUMMIT_RESULT)
       try {
         await submitResult(participant, persisted, computedResult, completedCount, updatedBoothResults);
       } catch {

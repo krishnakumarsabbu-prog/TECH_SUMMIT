@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Participant, BoothConfig, BoothResult } from '../types';
 import { Button } from '../components/Button';
 import { fetchParticipantFromResultRepo } from '../services/resultRepoService';
@@ -30,6 +30,14 @@ interface FormErrors {
   lob?: string;
 }
 
+interface ExistingRecord {
+  participant: Participant;
+  summary: any;
+  boothResults: Record<string, BoothResult>;
+}
+
+const AUTO_NAV_DELAY_MS = 3000;
+
 export function ParticipantDetails({
   initialData,
   targetBooth,
@@ -43,68 +51,125 @@ export function ParticipantDetails({
   const [errors, setErrors] = useState<FormErrors>({});
 
   const [isCheckingEntId, setIsCheckingEntId] = useState(false);
-  const [existingRecord, setExistingRecord] = useState<{
-    participant: Participant;
-    summary: any;
-    boothResults: Record<string, BoothResult>;
-  } | null>(null);
+  const [existingRecord, setExistingRecord] = useState<ExistingRecord | null>(null);
+  const [autoNavCountdown, setAutoNavCountdown] = useState<number | null>(null);
 
-  const debounceTimer = useRef<any>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoNavTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoNavIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const nameRef = useRef(name);
+  const lobRef = useRef(lob);
+  nameRef.current = name;
+  lobRef.current = lob;
 
-  // Check if EntID already exists in results database
-  const checkEntIdDatabase = async (idToCheck: string) => {
-    const clean = idToCheck.trim().toUpperCase();
-    if (clean.length < 3) {
-      setExistingRecord(null);
-      return;
-    }
+  const clearAutoNav = useCallback(() => {
+    if (autoNavTimer.current) { clearTimeout(autoNavTimer.current); autoNavTimer.current = null; }
+    if (autoNavIntervalRef.current) { clearInterval(autoNavIntervalRef.current); autoNavIntervalRef.current = null; }
+    setAutoNavCountdown(null);
+  }, []);
 
-    setIsCheckingEntId(true);
-    try {
-      const res = await fetchParticipantFromResultRepo(clean);
-      if (res.exists && res.participant) {
-        setExistingRecord({
-          participant: res.participant,
-          summary: res.summary,
-          boothResults: res.boothResults || {},
-        });
-        // Auto-fill existing name and LOB if not already typed
-        if (!name.trim() && res.participant.name) {
-          setName(res.participant.name);
-        }
-        if (!lob.trim() && res.participant.lob) {
-          setLob(res.participant.lob);
-        }
-        setErrors((prev) => ({ ...prev, entId: undefined }));
-      } else {
+  const navigateAsExisting = useCallback(
+    (record: ExistingRecord) => {
+      clearAutoNav();
+      const resolvedLob = record.participant.lob && LOB_OPTIONS.includes(record.participant.lob)
+        ? record.participant.lob
+        : LOB_OPTIONS[0];
+      const participant: Participant = {
+        name: record.participant.name,
+        entId: record.participant.entId.toUpperCase(),
+        lob: resolvedLob,
+        company: 'Wells Fargo',
+        role: 'Summit Attendee',
+      };
+      onContinue(participant, record.boothResults);
+    },
+    [clearAutoNav, onContinue],
+  );
+
+  const checkEntIdDatabase = useCallback(
+    async (idToCheck: string) => {
+      const clean = idToCheck.trim().toUpperCase();
+      if (clean.length < 3) {
         setExistingRecord(null);
+        clearAutoNav();
+        return;
       }
-    } catch {
-      setExistingRecord(null);
-    } finally {
-      setIsCheckingEntId(false);
-    }
-  };
+      setIsCheckingEntId(true);
+      try {
+        const res = await fetchParticipantFromResultRepo(clean);
+        if (res.exists && res.participant) {
+          const record: ExistingRecord = {
+            participant: res.participant,
+            summary: res.summary,
+            boothResults: res.boothResults || {},
+          };
+          setExistingRecord(record);
+          if (!nameRef.current.trim() && res.participant.name) {
+            setName(res.participant.name);
+          }
+          if (!lobRef.current.trim() && res.participant.lob && LOB_OPTIONS.includes(res.participant.lob)) {
+            setLob(res.participant.lob);
+          }
+          setErrors((prev) => ({ ...prev, entId: undefined }));
+        } else {
+          setExistingRecord(null);
+          clearAutoNav();
+        }
+      } catch {
+        setExistingRecord(null);
+        clearAutoNav();
+      } finally {
+        setIsCheckingEntId(false);
+      }
+    },
+    [clearAutoNav],
+  );
 
-  // Handle typing in EntID input with debounce
+  // Auto-navigate countdown when existing record is found
+  useEffect(() => {
+    if (!existingRecord) return;
+    const totalSeconds = Math.round(AUTO_NAV_DELAY_MS / 1000);
+    setAutoNavCountdown(totalSeconds);
+    let remaining = totalSeconds;
+    autoNavIntervalRef.current = setInterval(() => {
+      remaining -= 1;
+      setAutoNavCountdown(remaining > 0 ? remaining : 0);
+    }, 1000);
+    autoNavTimer.current = setTimeout(() => {
+      clearInterval(autoNavIntervalRef.current!);
+      autoNavIntervalRef.current = null;
+      setAutoNavCountdown(null);
+      navigateAsExisting(existingRecord);
+    }, AUTO_NAV_DELAY_MS);
+    return () => {
+      clearInterval(autoNavIntervalRef.current!);
+      clearTimeout(autoNavTimer.current!);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingRecord]);
+
   const handleEntIdChange = (val: string) => {
     setEntId(val);
-    if (errors.entId) setErrors((prev) => ({ ...prev, entId: undefined }));
-
+    setErrors((prev) => ({ ...prev, entId: undefined }));
+    if (existingRecord) {
+      setExistingRecord(null);
+      clearAutoNav();
+    }
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       checkEntIdDatabase(val);
-    }, 600);
+    }, 700);
   };
 
-  // Initial check if initialData has an EntID
   useEffect(() => {
     if (initialData?.entId) {
       checkEntIdDatabase(initialData.entId);
     }
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      clearAutoNav();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function validate(): boolean {
@@ -122,46 +187,41 @@ export function ParticipantDetails({
 
   async function handleSubmit(ev: React.FormEvent) {
     ev.preventDefault();
+    clearAutoNav();
+
+    if (existingRecord) {
+      navigateAsExisting(existingRecord);
+      return;
+    }
+
     if (!validate()) return;
 
     const finalLob = lob === 'Other' && customLob.trim() ? customLob.trim() : lob.trim();
     const cleanId = entId.trim().toUpperCase();
 
-    // If already verified existing record
-    if (existingRecord) {
-      const participant: Participant = {
-        name: name.trim().replace(/\s+/g, ' ') || existingRecord.participant.name,
-        entId: cleanId,
-        lob: finalLob || existingRecord.participant.lob,
-        company: 'Wells Fargo',
-        role: 'Summit Attendee',
-      };
-      onContinue(participant, existingRecord.boothResults);
-      return;
-    }
-
-    // Fast final check in case user submitted without waiting for debounce
     setIsCheckingEntId(true);
     try {
       const checkRes = await fetchParticipantFromResultRepo(cleanId);
       if (checkRes.exists && checkRes.participant) {
+        const resolvedLob = checkRes.participant.lob && LOB_OPTIONS.includes(checkRes.participant.lob)
+          ? checkRes.participant.lob
+          : finalLob || LOB_OPTIONS[0];
         const participant: Participant = {
           name: name.trim().replace(/\s+/g, ' ') || checkRes.participant.name,
           entId: cleanId,
-          lob: finalLob || checkRes.participant.lob,
+          lob: resolvedLob,
           company: 'Wells Fargo',
           role: 'Summit Attendee',
         };
-        onContinue(participant, checkRes.boothResults || {});
+        onContinue(participant, checkRes.boothResults ?? {});
         return;
       }
     } catch {
-      // Continue to new registration
+      // new user — continue
     } finally {
       setIsCheckingEntId(false);
     }
 
-    // New participant registration
     onContinue({
       name: name.trim().replace(/\s+/g, ' '),
       entId: cleanId,
@@ -170,6 +230,12 @@ export function ParticipantDetails({
       role: 'Participant',
     });
   }
+
+  const testCount = existingRecord
+    ? (existingRecord.summary?.totalTestsAppeared ?? Object.keys(existingRecord.boothResults).length)
+    : 0;
+
+  const isExistingUserConfirmed = Boolean(existingRecord);
 
   return (
     <div className="ts-page ts-page--participant">
@@ -183,36 +249,68 @@ export function ParticipantDetails({
 
         <h1 className="ts-page__title ts-page__title--sm">PARTICIPANT REGISTRATION</h1>
         <p className="ts-page__description">
-          Enter your Name, Enterprise ID (EntID), and Line of Business (LOB).
-          If you have already participated on another device or window, entering your EntID will automatically restore your challenge passport!
+          {isExistingUserConfirmed
+            ? 'Your summit passport was found — restoring your progress automatically.'
+            : 'Enter your Enterprise ID. If you have participated before, your progress will be restored instantly.'}
         </p>
 
-        {/* Existing Record Notification Banner */}
         {existingRecord && (
           <div
             style={{
-              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%)',
-              border: '1px solid rgba(34, 197, 94, 0.35)',
-              borderRadius: '10px',
-              padding: '14px 18px',
-              marginBottom: '20px',
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'center',
+              background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(16,185,129,0.10) 100%)',
+              border: '1.5px solid rgba(34,197,94,0.55)',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              marginBottom: '22px',
             }}
           >
-            <span style={{ fontSize: '24px' }}>✨</span>
-            <div style={{ fontSize: '13.5px', lineHeight: '1.45', color: 'var(--text-primary)' }}>
-              <strong style={{ color: '#16a34a', display: 'block', fontSize: '14.5px', marginBottom: '2px' }}>
-                Existing Summit Record Found for {existingRecord.participant.entId}!
-              </strong>
-              <span>
-                Welcome back, <strong>{existingRecord.participant.name}</strong>! Found{' '}
-                <strong style={{ color: 'var(--brand-red)' }}>
-                  {existingRecord.summary?.totalTestsAppeared || Object.keys(existingRecord.boothResults).length} completed tests
-                </strong>{' '}
-                in the database. Your passport badges and scores will be restored instantly!
-              </span>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+              <span style={{ fontSize: '30px', flexShrink: 0, lineHeight: '1' }}>✅</span>
+              <div style={{ flex: 1 }}>
+                <strong style={{ color: '#16a34a', display: 'block', fontSize: '15.5px', marginBottom: '5px' }}>
+                  Welcome back, {existingRecord.participant.name}!
+                </strong>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: '1.5' }}>
+                  EntID: <strong>{existingRecord.participant.entId}</strong>
+                  {' · '}
+                  {testCount > 0 ? (
+                    <>
+                      <strong style={{ color: 'var(--brand-red)' }}>
+                        {testCount} booth test{testCount !== 1 ? 's' : ''} completed
+                      </strong>{' '}
+                      — your passport badges will be restored.
+                    </>
+                  ) : (
+                    'Registered — no booth tests yet. Ready to start!'
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    id="btn-continue-as-existing"
+                    onClick={() => navigateAsExisting(existingRecord)}
+                    style={{
+                      background: 'linear-gradient(135deg, #16a34a, #15803d)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '10px 22px',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      letterSpacing: '0.4px',
+                      boxShadow: '0 2px 8px rgba(22,163,74,0.35)',
+                    }}
+                  >
+                    {targetBooth ? `▶ Go to Booth ${targetBooth.number} Quiz` : '🎫 Open My Passport'}
+                  </button>
+                  {autoNavCountdown !== null && autoNavCountdown > 0 && (
+                    <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                      Auto-continuing in {autoNavCountdown}s…
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -222,8 +320,8 @@ export function ParticipantDetails({
             <label htmlFor="entId" className="ts-field__label">
               Enterprise ID (EntID) <span className="ts-field__required">*</span>
               {isCheckingEntId && (
-                <span style={{ fontSize: '12px', color: '#0284c7', marginLeft: '8px', fontWeight: 500 }}>
-                  🔍 Checking database...
+                <span style={{ fontSize: '11.5px', color: '#0284c7', marginLeft: '8px', fontWeight: 500 }}>
+                  🔍 Checking GitHub…
                 </span>
               )}
             </label>
@@ -233,90 +331,97 @@ export function ParticipantDetails({
               className="ts-field__input"
               value={entId}
               onChange={(e) => handleEntIdChange(e.target.value)}
-              onBlur={() => checkEntIdDatabase(entId)}
+              onBlur={() => { if (!existingRecord) checkEntIdDatabase(entId); }}
               placeholder="e.g. U123456"
               autoCapitalize="characters"
+              autoComplete="off"
               aria-required="true"
               aria-invalid={!!errors.entId}
-              style={existingRecord ? { borderColor: '#16a34a', boxShadow: '0 0 0 1px #16a34a' } : undefined}
+              style={existingRecord ? { borderColor: '#16a34a', boxShadow: '0 0 0 2px rgba(22,163,74,0.25)' } : undefined}
             />
             {errors.entId && <span className="ts-field__error" role="alert">{errors.entId}</span>}
           </div>
 
-          <div className="ts-field">
-            <label htmlFor="name" className="ts-field__label">
-              Full Name <span className="ts-field__required">*</span>
-            </label>
-            <input
-              id="name"
-              type="text"
-              className="ts-field__input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Alex Johnson"
-              autoComplete="name"
-              aria-required="true"
-              aria-invalid={!!errors.name}
-            />
-            {errors.name && <span className="ts-field__error" role="alert">{errors.name}</span>}
-          </div>
+          {!isExistingUserConfirmed && (
+            <>
+              <div className="ts-field">
+                <label htmlFor="name" className="ts-field__label">
+                  Full Name <span className="ts-field__required">*</span>
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  className="ts-field__input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Alex Johnson"
+                  autoComplete="name"
+                  aria-required="true"
+                  aria-invalid={!!errors.name}
+                />
+                {errors.name && <span className="ts-field__error" role="alert">{errors.name}</span>}
+              </div>
 
-          <div className="ts-field">
-            <label htmlFor="lob" className="ts-field__label">
-              Line of Business (LOB) <span className="ts-field__required">*</span>
-            </label>
-            <select
-              id="lob"
-              className="ts-field__input ts-field__select"
-              value={lob}
-              onChange={(e) => {
-                setLob(e.target.value);
-                if (errors.lob) setErrors((prev) => ({ ...prev, lob: undefined }));
-              }}
-              aria-required="true"
-              aria-invalid={!!errors.lob}
-            >
-              <option value="">-- Select Line of Business (LOB) --</option>
-              {LOB_OPTIONS.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-            {errors.lob && <span className="ts-field__error" role="alert">{errors.lob}</span>}
-          </div>
+              <div className="ts-field">
+                <label htmlFor="lob" className="ts-field__label">
+                  Line of Business (LOB) <span className="ts-field__required">*</span>
+                </label>
+                <select
+                  id="lob"
+                  className="ts-field__input ts-field__select"
+                  value={lob}
+                  onChange={(e) => {
+                    setLob(e.target.value);
+                    if (errors.lob) setErrors((prev) => ({ ...prev, lob: undefined }));
+                  }}
+                  aria-required="true"
+                  aria-invalid={!!errors.lob}
+                >
+                  <option value="">-- Select Line of Business (LOB) --</option>
+                  {LOB_OPTIONS.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+                {errors.lob && <span className="ts-field__error" role="alert">{errors.lob}</span>}
+              </div>
 
-          {lob === 'Other' && (
-            <div className="ts-field">
-              <label htmlFor="customLob" className="ts-field__label">
-                Specify Line of Business <span className="ts-field__required">*</span>
-              </label>
-              <input
-                id="customLob"
-                type="text"
-                className="ts-field__input"
-                value={customLob}
-                onChange={(e) => setCustomLob(e.target.value)}
-                placeholder="e.g. Innovation Labs / Strategy"
-                aria-required="true"
-              />
-            </div>
+              {lob === 'Other' && (
+                <div className="ts-field">
+                  <label htmlFor="customLob" className="ts-field__label">
+                    Specify Line of Business <span className="ts-field__required">*</span>
+                  </label>
+                  <input
+                    id="customLob"
+                    type="text"
+                    className="ts-field__input"
+                    value={customLob}
+                    onChange={(e) => setCustomLob(e.target.value)}
+                    placeholder="e.g. Innovation Labs / Strategy"
+                    aria-required="true"
+                  />
+                </div>
+              )}
+
+              <div className="ts-form__actions">
+                {onBack && (
+                  <Button type="button" variant="secondary" onClick={onBack}>
+                    BACK
+                  </Button>
+                )}
+                <Button type="submit" fullWidth={!onBack} disabled={isCheckingEntId}>
+                  {isCheckingEntId ? 'VERIFYING…' : 'REGISTER & CONTINUE →'}
+                </Button>
+              </div>
+            </>
           )}
 
-          <div className="ts-form__actions">
-            {onBack && (
-              <Button type="button" variant="secondary" onClick={onBack}>
+          {isExistingUserConfirmed && onBack && (
+            <div className="ts-form__actions" style={{ marginTop: '8px' }}>
+              <Button type="button" variant="secondary" onClick={() => { clearAutoNav(); onBack!(); }}>
                 BACK
               </Button>
-            )}
-            <Button type="submit" fullWidth={!onBack} disabled={isCheckingEntId}>
-              {existingRecord
-                ? `RESTORE PASSPORT & RESUME (${existingRecord.summary?.totalTestsAppeared || Object.keys(existingRecord.boothResults).length} TESTS) →`
-                : isCheckingEntId
-                ? 'VERIFYING ID...'
-                : 'REGISTER & CONTINUE TO PASSPORT →'}
-            </Button>
-          </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
