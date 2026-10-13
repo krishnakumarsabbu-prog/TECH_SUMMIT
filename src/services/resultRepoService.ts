@@ -41,6 +41,16 @@ export function toBase64Utf8(str: string): string {
   return btoa(binary);
 }
 
+export function fromBase64Utf8(base64Str: string): string {
+  const clean = base64Str.replace(/\s+/g, '');
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder().decode(bytes);
+}
+
 /**
  * Tests connection and permissions to the target result repository
  */
@@ -249,3 +259,155 @@ export async function pushTestResultToResultRepo(
   const summaryMsg = `Update test database summary for ${entId} (${totalTests} tests appeared)`;
   await commitFileToResultRepo(summaryPath, JSON.stringify(summaryData, null, 2), summaryMsg);
 }
+
+export interface ParticipantFetchResult {
+  exists: boolean;
+  participant?: Participant;
+  summary?: any;
+  boothResults?: Record<string, BoothResult>;
+  error?: string;
+}
+
+/**
+ * Checks if a participant already has an existing results folder in TECH_SUMMIT_RESULT
+ * (results/{EntID}/summary.json) and pulls their registration and completed test records.
+ * Supports both GitHub REST API v3 and local server fallback.
+ */
+export async function fetchParticipantFromResultRepo(entId: string): Promise<ParticipantFetchResult> {
+  const cleanId = (entId || '').trim().toUpperCase();
+  if (!cleanId) return { exists: false };
+
+  const token = getGitHubToken();
+  const repo = getResultRepo();
+  const summaryPath = `results/${cleanId}/summary.json`;
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${summaryPath}`;
+
+  // 1. Check GitHub result repository
+  try {
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github+json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(apiUrl, { headers });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.content) {
+        const decodedStr = fromBase64Utf8(data.content);
+        const summary = JSON.parse(decodedStr);
+
+        const participant: Participant = {
+          name: summary.name || 'Participant',
+          entId: cleanId,
+          lob: summary.lob || 'N/A',
+          company: 'Wells Fargo',
+          role: 'Summit Attendee',
+        };
+
+        const boothResults: Record<string, BoothResult> = {};
+        if (Array.isArray(summary.tests)) {
+          summary.tests.forEach((t: any) => {
+            const boothId = t.boothId || `booth-${t.boothNumber}`;
+            const score = t.score ?? 0;
+            const totalQuestions = t.totalQuestions ?? 5;
+            const correctAnswers = t.correctAnswers ?? score;
+            const incorrectAnswers = t.incorrectAnswers ?? Math.max(0, totalQuestions - correctAnswers);
+            const unansweredAnswers = t.unansweredAnswers ?? 0;
+            const percentage = t.percentage ?? (totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0);
+
+            boothResults[boothId] = {
+              boothId,
+              boothNumber: t.boothNumber || 1,
+              boothTitle: t.boothTitle || `Booth ${t.boothNumber}`,
+              topicTitle: t.topicTitle || 'Standard Topic',
+              topicId: t.topicId,
+              score,
+              totalQuestions,
+              percentage,
+              correctAnswers,
+              incorrectAnswers,
+              unansweredAnswers,
+              timeTakenSeconds: t.timeTakenSeconds ?? 0,
+              completedAt: t.completedAt || new Date().toISOString(),
+              answers: Array.isArray(t.answers) ? t.answers : [],
+            };
+          });
+        }
+
+        console.log(`[GitHub Result Sync] Found existing records for ${cleanId}: ${Object.keys(boothResults).length} tests completed.`);
+        return {
+          exists: true,
+          participant,
+          summary,
+          boothResults,
+        };
+      }
+    }
+  } catch (err: any) {
+    console.info('[GitHub Result Sync] GitHub check note:', err?.message);
+  }
+
+  // 2. Local backend fallback (http://localhost:3001/api/results?entId=...)
+  try {
+    const localRes = await fetch(`http://localhost:3001/api/results?entId=${cleanId}`);
+    if (localRes.ok) {
+      const localData = await localRes.json();
+      if (localData && localData.found && (localData.summary || localData.registration)) {
+        const summary = localData.summary || {};
+        const reg = localData.registration || {};
+        const participant: Participant = {
+          name: summary.name || reg.name || 'Participant',
+          entId: cleanId,
+          lob: summary.lob || reg.lob || 'N/A',
+          company: 'Wells Fargo',
+          role: 'Summit Attendee',
+        };
+
+        const boothResults: Record<string, BoothResult> = {};
+        if (Array.isArray(summary.tests)) {
+          summary.tests.forEach((t: any) => {
+            const boothId = t.boothId || `booth-${t.boothNumber}`;
+            const score = t.score ?? 0;
+            const totalQuestions = t.totalQuestions ?? 5;
+            const correctAnswers = t.correctAnswers ?? score;
+            const incorrectAnswers = t.incorrectAnswers ?? Math.max(0, totalQuestions - correctAnswers);
+            const unansweredAnswers = t.unansweredAnswers ?? 0;
+            const percentage = t.percentage ?? (totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0);
+
+            boothResults[boothId] = {
+              boothId,
+              boothNumber: t.boothNumber || 1,
+              boothTitle: t.boothTitle || `Booth ${t.boothNumber}`,
+              topicTitle: t.topicTitle || 'Standard Topic',
+              topicId: t.topicId,
+              score,
+              totalQuestions,
+              percentage,
+              correctAnswers,
+              incorrectAnswers,
+              unansweredAnswers,
+              timeTakenSeconds: t.timeTakenSeconds ?? 0,
+              completedAt: t.completedAt || new Date().toISOString(),
+              answers: Array.isArray(t.answers) ? t.answers : [],
+            };
+          });
+        }
+
+        console.log(`[Local Result Sync] Found local records for ${cleanId}: ${Object.keys(boothResults).length} tests completed.`);
+        return {
+          exists: true,
+          participant,
+          summary,
+          boothResults,
+        };
+      }
+    }
+  } catch {
+    // Local server not active
+  }
+
+  return { exists: false };
+}
+

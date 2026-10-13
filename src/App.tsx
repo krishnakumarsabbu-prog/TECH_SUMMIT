@@ -21,12 +21,14 @@ import {
   clearQuizState,
   getBoothResults,
   saveBoothResult,
+  saveAllBoothResults,
   getBoothResult,
   hasPlayedBooth,
   resetAll,
   isTestMode,
   getBoothParamFromUrl,
 } from './utils/storage';
+import { fetchParticipantFromResultRepo } from './services/resultRepoService';
 import { getBoothById, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
 
 const QUESTION_COUNT = 5;
@@ -82,6 +84,29 @@ export default function App() {
 
       // Check if user is registered
       if (!savedParticipant) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramEntId = urlParams.get('entId') || urlParams.get('uuid') || urlParams.get('id');
+        if (paramEntId) {
+          fetchParticipantFromResultRepo(paramEntId).then((res) => {
+            if (res.exists && res.participant) {
+              setParticipant(res.participant);
+              saveParticipant(res.participant);
+              if (res.boothResults) {
+                setBoothResults(res.boothResults);
+                saveAllBoothResults(res.boothResults);
+              }
+              if (res.boothResults && res.boothResults[matchedBooth.id]) {
+                setCurrentBoothResult(res.boothResults[matchedBooth.id]);
+                setStage('ALREADY_PLAYED');
+              } else {
+                setStage('TOPIC_SELECTION');
+              }
+            } else {
+              setStage('PARTICIPANT');
+            }
+          });
+          return;
+        }
         // Unregistered: prompt registration first
         setStage('PARTICIPANT');
         return;
@@ -106,10 +131,27 @@ export default function App() {
       }
     }
 
-    // If attendee is registered, show their Passport!
+    // If attendee is registered in browser cache, show their Passport directly!
     if (savedParticipant) {
       setStage('PASSPORT');
       return;
+    }
+
+    // If incognito/new window has ?entId=... or ?uuid=... in URL, auto-restore from results repository
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramEntId = urlParams.get('entId') || urlParams.get('uuid') || urlParams.get('id');
+    if (paramEntId && !savedParticipant) {
+      fetchParticipantFromResultRepo(paramEntId).then((res) => {
+        if (res.exists && res.participant) {
+          setParticipant(res.participant);
+          saveParticipant(res.participant);
+          if (res.boothResults) {
+            setBoothResults(res.boothResults);
+            saveAllBoothResults(res.boothResults);
+          }
+          setStage('PASSPORT');
+        }
+      });
     }
 
     // Unregistered: show Innovation Showcase landing page
@@ -164,18 +206,39 @@ export default function App() {
     setStage('PASSPORT');
   }, [participant]);
 
-  const handleParticipantRegister = useCallback((p: Participant) => {
-    setParticipant(p);
-    saveParticipant(p);
+  const handleParticipantRegister = useCallback(
+    (p: Participant, restoredResults?: Record<string, BoothResult>) => {
+      setParticipant(p);
+      saveParticipant(p);
 
-    // Sync registration record to Excel (Google Sheets) and GitHub results repository (TECH_SUMMIT_RESULT)
-    registerParticipant(p).catch((err) => {
-      console.warn('Registration sync error:', err);
-    });
+      if (restoredResults && Object.keys(restoredResults).length > 0) {
+        setBoothResults(restoredResults);
+        saveAllBoothResults(restoredResults);
+        console.log(`[Participant Restore] Restored ${Object.keys(restoredResults).length} booth tests into browser cache for ${p.entId}`);
+      } else {
+        // Sync registration record to Excel (Google Sheets) and GitHub results repository (TECH_SUMMIT_RESULT)
+        registerParticipant(p).catch((err) => {
+          console.warn('Registration sync error:', err);
+        });
+      }
 
-    // After registration, go directly to passport page where attendee can decide which booth to play!
-    setStage('PASSPORT');
-  }, []);
+      // If a target booth was scanned and already completed, show already played
+      if (targetBooth && restoredResults && restoredResults[targetBooth.id]) {
+        setCurrentBoothResult(restoredResults[targetBooth.id]);
+        setStage('ALREADY_PLAYED');
+        return;
+      }
+
+      if (targetBooth && (!restoredResults || !restoredResults[targetBooth.id])) {
+        setStage('TOPIC_SELECTION');
+        return;
+      }
+
+      // After registration, go directly to passport page where attendee can decide which booth to play!
+      setStage('PASSPORT');
+    },
+    [targetBooth],
+  );
 
   const handleAnswer = useCallback((questionIndex: number, answerIndex: number) => {
     setQuizState((prev) => {

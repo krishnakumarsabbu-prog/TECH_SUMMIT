@@ -91,6 +91,12 @@ export function saveBoothResult(result: BoothResult): void {
   safeSet(KEYS.BOOTH_RESULTS, JSON.stringify(all));
 }
 
+export function saveAllBoothResults(all: Record<string, BoothResult>): void {
+  const existing = getBoothResults();
+  const merged = { ...existing, ...all };
+  safeSet(KEYS.BOOTH_RESULTS, JSON.stringify(merged));
+}
+
 export function getBoothResult(boothId: string): BoothResult | null {
   const all = getBoothResults();
   return all[boothId] || null;
