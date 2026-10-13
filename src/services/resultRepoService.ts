@@ -182,22 +182,39 @@ export async function pushRegistrationToResultRepo(participant: Participant): Pr
   const regMsg = `Register participant: ${participant.name} (${entId}) [${participant.lob || 'N/A'}]`;
   await commitFileToResultRepo(regPath, JSON.stringify(registrationData, null, 2), regMsg);
 
-  // Initialize or maintain summary database file
+  // Preserve existing tests if participant already appeared for tests
+  let existingTests: any[] = [];
+  let existingTotalScore = 0;
+  let existingTotalQuestions = 0;
+  let existingAccuracy = 0;
+
+  try {
+    const existing = await fetchParticipantFromResultRepo(entId);
+    if (existing.exists && existing.summary) {
+      existingTests = Array.isArray(existing.summary.tests) ? existing.summary.tests : [];
+      existingTotalScore = existing.summary.totalScore || 0;
+      existingTotalQuestions = existing.summary.totalQuestions || 0;
+      existingAccuracy = existing.summary.overallAccuracy || 0;
+    }
+  } catch {}
+
   const summaryPath = `results/${entId}/summary.json`;
   const summaryData = {
     entId,
     name: participant.name,
     lob: participant.lob || 'N/A',
     registeredAt: now,
-    totalTestsAppeared: 0,
-    totalScore: 0,
-    totalQuestions: 0,
-    overallAccuracy: 0,
-    isPrizeEligible: false,
-    tests: [],
+    totalTestsAppeared: existingTests.length,
+    totalScore: existingTotalScore,
+    totalQuestions: existingTotalQuestions,
+    overallAccuracy: existingAccuracy,
+    isPrizeEligible: existingTests.length >= 4,
+    tests: existingTests,
     lastUpdated: now,
   };
-  const summaryMsg = `Initialize test database summary for ${entId}`;
+  const summaryMsg = existingTests.length > 0
+    ? `Update participant profile for ${entId} (preserved ${existingTests.length} tests)`
+    : `Initialize test database summary for ${entId}`;
   await commitFileToResultRepo(summaryPath, JSON.stringify(summaryData, null, 2), summaryMsg);
 }
 
@@ -270,104 +287,220 @@ export interface ParticipantFetchResult {
 
 /**
  * Checks if a participant already has an existing results folder in TECH_SUMMIT_RESULT
- * (results/{EntID}/summary.json) and pulls their registration and completed test records.
- * Supports both GitHub REST API v3 and local server fallback.
+ * (https://github.com/krishnakumarsabbu-prog/TECH_SUMMIT_RESULT/tree/main/results)
+ * Directly inspects results/{EntID}/ folder, pulls registration.json, summary.json,
+ * and ALL individual booth-*.json files to restore complete test records.
  */
 export async function fetchParticipantFromResultRepo(entId: string): Promise<ParticipantFetchResult> {
-  const cleanId = (entId || '').trim().toUpperCase();
+  const cleanId = (entId || '').trim();
   if (!cleanId) return { exists: false };
 
   const token = getGitHubToken();
   const repo = getResultRepo();
-  const summaryPath = `results/${cleanId}/summary.json`;
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${summaryPath}`;
 
-  // 1. Check GitHub result repository
-  try {
-    const headers: Record<string, string> = {
-      'Accept': 'application/vnd.github+json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+  // Try both uppercase and lowercase folder paths (GitHub API is case-sensitive)
+  const candidateFolders = [cleanId.toUpperCase(), cleanId.toLowerCase(), cleanId];
+  const headers: Record<string, string> = {
+    'Accept': 'application/vnd.github+json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
-    const res = await fetch(apiUrl, { headers });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.content) {
-        const decodedStr = fromBase64Utf8(data.content);
-        const summary = JSON.parse(decodedStr);
+  // 1. Check GitHub result repository folder directly: results/{EntID}
+  for (const folder of candidateFolders) {
+    try {
+      const folderUrl = `https://api.github.com/repos/${repo}/contents/results/${folder}`;
+      const res = await fetch(folderUrl, { headers });
 
-        const participant: Participant = {
-          name: summary.name || 'Participant',
-          entId: cleanId,
-          lob: summary.lob || 'N/A',
-          company: 'Wells Fargo',
-          role: 'Summit Attendee',
-        };
+      if (res.ok) {
+        const folderFiles = await res.json();
+        if (Array.isArray(folderFiles) && folderFiles.length > 0) {
+          console.log(`[GitHub Result Sync] Found folder results/${folder} with ${folderFiles.length} files on GitHub.`);
 
-        const boothResults: Record<string, BoothResult> = {};
-        if (Array.isArray(summary.tests)) {
-          summary.tests.forEach((t: any) => {
-            const boothId = t.boothId || `booth-${t.boothNumber}`;
-            const score = t.score ?? 0;
-            const totalQuestions = t.totalQuestions ?? 5;
-            const correctAnswers = t.correctAnswers ?? score;
-            const incorrectAnswers = t.incorrectAnswers ?? Math.max(0, totalQuestions - correctAnswers);
-            const unansweredAnswers = t.unansweredAnswers ?? 0;
-            const percentage = t.percentage ?? (totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0);
+          let participant: Participant | null = null;
+          let summary: any = null;
+          const boothResults: Record<string, BoothResult> = {};
 
-            boothResults[boothId] = {
-              boothId,
-              boothNumber: t.boothNumber || 1,
-              boothTitle: t.boothTitle || `Booth ${t.boothNumber}`,
-              topicTitle: t.topicTitle || 'Standard Topic',
-              topicId: t.topicId,
-              score,
-              totalQuestions,
-              percentage,
-              correctAnswers,
-              incorrectAnswers,
-              unansweredAnswers,
-              timeTakenSeconds: t.timeTakenSeconds ?? 0,
-              completedAt: t.completedAt || new Date().toISOString(),
-              answers: Array.isArray(t.answers) ? t.answers : [],
+          // Process each file in the user's folder
+          for (const file of folderFiles) {
+            // A. Registration file
+            if (file.name === 'registration.json') {
+              try {
+                let regContent = '';
+                if (file.download_url) {
+                  const rRes = await fetch(file.download_url, { headers });
+                  if (rRes.ok) regContent = await rRes.text();
+                } else if (file.content) {
+                  regContent = fromBase64Utf8(file.content);
+                }
+                if (regContent) {
+                  const rData = JSON.parse(regContent);
+                  participant = {
+                    name: rData.name || 'Participant',
+                    entId: (rData.entId || cleanId).toUpperCase(),
+                    lob: rData.lob || 'N/A',
+                    company: 'Wells Fargo',
+                    role: 'Participant',
+                  };
+                }
+              } catch (e) {
+                console.warn('[GitHub Sync] Error reading registration.json:', e);
+              }
+            }
+
+            // B. Summary file
+            if (file.name === 'summary.json') {
+              try {
+                let sContent = '';
+                if (file.download_url) {
+                  const sRes = await fetch(file.download_url, { headers });
+                  if (sRes.ok) sContent = await sRes.text();
+                } else if (file.content) {
+                  sContent = fromBase64Utf8(file.content);
+                }
+                if (sContent) {
+                  summary = JSON.parse(sContent);
+                  if (!participant && summary?.name) {
+                    participant = {
+                      name: summary.name,
+                      entId: (summary.entId || cleanId).toUpperCase(),
+                      lob: summary.lob || 'N/A',
+                      company: 'Wells Fargo',
+                      role: 'Participant',
+                    };
+                  }
+                  // If summary already has tests, load them
+                  if (Array.isArray(summary.tests)) {
+                    summary.tests.forEach((t: any) => {
+                      const bNum = t.boothNumber || 1;
+                      const bId = t.boothId || `booth-${bNum}`;
+                      const score = t.score ?? 0;
+                      const totalQuestions = t.totalQuestions ?? 5;
+                      boothResults[bId] = {
+                        boothId: bId,
+                        boothNumber: bNum,
+                        boothTitle: t.boothTitle || `Booth ${bNum}`,
+                        topicTitle: t.topicTitle || 'Standard Topic',
+                        topicId: t.topicId,
+                        score,
+                        totalQuestions,
+                        percentage: t.percentage ?? (totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0),
+                        correctAnswers: t.correctAnswers ?? score,
+                        incorrectAnswers: t.incorrectAnswers ?? Math.max(0, totalQuestions - score),
+                        unansweredAnswers: t.unansweredAnswers ?? 0,
+                        timeTakenSeconds: t.timeTakenSeconds ?? 0,
+                        completedAt: t.completedAt || new Date().toISOString(),
+                        answers: Array.isArray(t.answers) ? t.answers : [],
+                      };
+                    });
+                  }
+                }
+              } catch (e) {
+                console.warn('[GitHub Sync] Error reading summary.json:', e);
+              }
+            }
+
+            // C. Individual booth test submissions: booth-1.json, booth-3.json, etc.
+            if (/^booth-?\d+\.json$/i.test(file.name)) {
+              try {
+                let bContent = '';
+                if (file.download_url) {
+                  const bRes = await fetch(file.download_url, { headers });
+                  if (bRes.ok) bContent = await bRes.text();
+                } else if (file.content) {
+                  bContent = fromBase64Utf8(file.content);
+                }
+                if (bContent) {
+                  const bData = JSON.parse(bContent);
+                  const boothNumber = bData.booth?.boothNumber || parseInt(file.name.match(/\d+/)?.[0] || '1', 10);
+                  const boothId = bData.booth?.boothId || `booth-${boothNumber}`;
+
+                  if (!participant && bData.participant?.name) {
+                    participant = {
+                      name: bData.participant.name,
+                      entId: (bData.participant.entId || cleanId).toUpperCase(),
+                      lob: bData.participant.lob || 'N/A',
+                      company: 'Wells Fargo',
+                      role: 'Participant',
+                    };
+                  }
+
+                  const score = bData.quiz?.score ?? 0;
+                  const totalQuestions = bData.quiz?.totalQuestions ?? 5;
+                  const percentage = bData.quiz?.percentage ?? (totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0);
+
+                  boothResults[boothId] = {
+                    boothId,
+                    boothNumber,
+                    boothTitle: bData.booth?.boothTitle || `Booth ${boothNumber}`,
+                    topicTitle: bData.booth?.topicTitle || 'Standard Topic',
+                    topicId: bData.booth?.topicId,
+                    score,
+                    totalQuestions,
+                    percentage,
+                    correctAnswers: bData.quiz?.correctAnswers ?? score,
+                    incorrectAnswers: bData.quiz?.incorrectAnswers ?? Math.max(0, totalQuestions - score),
+                    unansweredAnswers: bData.quiz?.unansweredAnswers ?? 0,
+                    timeTakenSeconds: bData.quiz?.timeTakenSeconds ?? 0,
+                    completedAt: bData.submission?.completedAt || bData.completedAt || new Date().toISOString(),
+                    answers: Array.isArray(bData.answers) ? bData.answers : [],
+                  };
+                }
+              } catch (e) {
+                console.warn(`[GitHub Sync] Error reading ${file.name}:`, e);
+              }
+            }
+          }
+
+          if (!participant) {
+            participant = {
+              name: 'Participant',
+              entId: cleanId.toUpperCase(),
+              lob: 'N/A',
+              company: 'Wells Fargo',
+              role: 'Summit Attendee',
             };
-          });
-        }
+          }
 
-        console.log(`[GitHub Result Sync] Found existing records for ${cleanId}: ${Object.keys(boothResults).length} tests completed.`);
-        return {
-          exists: true,
-          participant,
-          summary,
-          boothResults,
-        };
+          console.log(`[GitHub Result Sync] Successfully pulled records for ${cleanId.toUpperCase()}:`, {
+            participant,
+            testsCount: Object.keys(boothResults).length,
+            booths: Object.keys(boothResults),
+          });
+
+          return {
+            exists: true,
+            participant,
+            summary: summary || { tests: Object.values(boothResults), totalTestsAppeared: Object.keys(boothResults).length },
+            boothResults,
+          };
+        }
       }
+    } catch (err: any) {
+      console.info(`[GitHub Result Sync] Folder check error for ${folder}:`, err?.message);
     }
-  } catch (err: any) {
-    console.info('[GitHub Result Sync] GitHub check note:', err?.message);
   }
 
   // 2. Local backend fallback (http://localhost:3001/api/results?entId=...)
   try {
-    const localRes = await fetch(`http://localhost:3001/api/results?entId=${cleanId}`);
+    const localRes = await fetch(`http://localhost:3001/api/results?entId=${cleanId.toUpperCase()}`);
     if (localRes.ok) {
       const localData = await localRes.json();
       if (localData && localData.found && (localData.summary || localData.registration)) {
-        const summary = localData.summary || {};
+        const localSummary = localData.summary || {};
         const reg = localData.registration || {};
         const participant: Participant = {
-          name: summary.name || reg.name || 'Participant',
-          entId: cleanId,
-          lob: summary.lob || reg.lob || 'N/A',
+          name: localSummary.name || reg.name || 'Participant',
+          entId: cleanId.toUpperCase(),
+          lob: localSummary.lob || reg.lob || 'N/A',
           company: 'Wells Fargo',
           role: 'Summit Attendee',
         };
 
         const boothResults: Record<string, BoothResult> = {};
-        if (Array.isArray(summary.tests)) {
-          summary.tests.forEach((t: any) => {
+        if (Array.isArray(localSummary.tests)) {
+          localSummary.tests.forEach((t: any) => {
             const boothId = t.boothId || `booth-${t.boothNumber}`;
             const score = t.score ?? 0;
             const totalQuestions = t.totalQuestions ?? 5;
@@ -395,11 +528,11 @@ export async function fetchParticipantFromResultRepo(entId: string): Promise<Par
           });
         }
 
-        console.log(`[Local Result Sync] Found local records for ${cleanId}: ${Object.keys(boothResults).length} tests completed.`);
+        console.log(`[Local Result Sync] Found local records for ${cleanId.toUpperCase()}: ${Object.keys(boothResults).length} tests completed.`);
         return {
           exists: true,
           participant,
-          summary,
+          summary: localSummary,
           boothResults,
         };
       }
