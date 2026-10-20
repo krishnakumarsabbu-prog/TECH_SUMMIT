@@ -11,9 +11,9 @@ import { generateParticipationKey } from '../utils/participation';
 import { buildSubmission, validateSubmission } from '../utils/submission';
 import { saveSubmissionRecord } from '../utils/storage';
 import {
-  pushRegistrationToResultRepo,
-  pushTestResultToResultRepo,
-} from './resultRepoService';
+  registerParticipantInFirestore,
+  saveBoothResultInFirestore,
+} from './firebaseService';
 
 export async function generateSubmission(
   participant: Participant,
@@ -37,37 +37,40 @@ export async function generateSubmission(
 }
 
 /**
- * Registers participant and syncs ONLY to:
- * GitHub repository: https://github.com/krishnakumarsabbu-prog/TECH_SUMMIT_RESULT.git
- *   - creates results/{EntID}/registration.json
- *   - initializes results/{EntID}/summary.json
+ * Registers participant solely in Firebase Firestore database
  */
-export async function registerParticipant(participant: Participant): Promise<void> {
-  // Push registration & initialize summary to GitHub TECH_SUMMIT_RESULT repository
+export async function registerParticipant(participant: Participant): Promise<{ success: boolean; error?: string }> {
   try {
-    await pushRegistrationToResultRepo(participant);
-    console.log(`[Registration] ✓ Registered ${participant.entId} in GitHub result repo.`);
-  } catch (e) {
-    console.warn('[Registration] GitHub result repo sync encountered an error:', e);
+    const res = await registerParticipantInFirestore(participant);
+    if (res.success) {
+      console.log(`[Registration] ✓ Registered participant ${participant.entId} in Firebase Firestore.`);
+    } else {
+      console.warn(`[Registration] Firebase Firestore returned error:`, res.error);
+    }
+    return res;
+  } catch (e: any) {
+    console.warn('[Registration] Firebase Firestore error:', e);
+    return { success: false, error: e?.message || 'Unknown error' };
   }
 }
 
 /**
- * Syncs submission results ONLY to:
- * GitHub repository: https://github.com/krishnakumarsabbu-prog/TECH_SUMMIT_RESULT.git
- *   - saves results/{EntID}/booth-{number}.json
- *   - updates results/{EntID}/summary.json
+ * Syncs submission results solely to Firebase Firestore database
  */
-async function syncSubmissionToGitHub(
+async function syncSubmission(
   submission: Submission,
   allBoothResults: Record<string, BoothResult>
 ): Promise<boolean> {
   try {
-    await pushTestResultToResultRepo(submission.participant, submission, allBoothResults);
-    console.log(`[GitHub Sync] ✓ Pushed booth ${submission.booth?.boothNumber} result for ${submission.participant.entId}`);
-    return true;
+    const res = await saveBoothResultInFirestore(submission.participant, submission, allBoothResults);
+    if (res.success) {
+      console.log(`[Submission] ✓ Saved booth ${submission.booth?.boothNumber} result in Firebase for ${submission.participant.entId}`);
+      return true;
+    }
+    console.warn('[Submission] Failed to save result in Firebase:', res.error);
+    return false;
   } catch (e) {
-    console.warn('[GitHub Result Repo] Error syncing test result:', e);
+    console.warn('[Submission] Firebase Firestore error:', e);
     return false;
   }
 }
@@ -85,9 +88,9 @@ export async function submitResult(
   // 2. Persist in local storage
   saveSubmissionRecord(submission);
 
-  // 3. Push to GitHub result repository without blocking UI
-  syncSubmissionToGitHub(submission, allBoothResults || {}).catch((err) => {
-    console.info('GitHub sync background info:', err);
+  // 3. Push to Firebase Firestore
+  syncSubmission(submission, allBoothResults || {}).catch((err) => {
+    console.warn('[Submission] Background sync error:', err);
   });
 
   return submission;

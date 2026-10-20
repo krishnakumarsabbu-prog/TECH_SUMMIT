@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Participant, BoothConfig, BoothResult } from '../types';
 import { Button } from '../components/Button';
-import { fetchParticipantFromResultRepo } from '../services/resultRepoService';
+import { fetchParticipantFromFirestore } from '../services/firebaseService';
 
 export const LOB_OPTIONS = [
   'Technology / Enterprise Technology',
@@ -96,7 +96,7 @@ export function ParticipantDetails({
       }
       setIsCheckingEntId(true);
       try {
-        const res = await fetchParticipantFromResultRepo(clean);
+        const res = await fetchParticipantFromFirestore(clean);
         if (res.exists && res.participant) {
           const record: ExistingRecord = {
             participant: res.participant,
@@ -201,7 +201,7 @@ export function ParticipantDetails({
 
     setIsCheckingEntId(true);
     try {
-      const checkRes = await fetchParticipantFromResultRepo(cleanId);
+      const checkRes = await fetchParticipantFromFirestore(cleanId);
       if (checkRes.exists && checkRes.participant) {
         const resolvedLob = checkRes.participant.lob && LOB_OPTIONS.includes(checkRes.participant.lob)
           ? checkRes.participant.lob
@@ -321,7 +321,7 @@ export function ParticipantDetails({
               Enterprise ID (EntID) <span className="ts-field__required">*</span>
               {isCheckingEntId && (
                 <span style={{ fontSize: '11.5px', color: '#0284c7', marginLeft: '8px', fontWeight: 500 }}>
-                  🔍 Checking GitHub…
+                  🔍 Checking database…
                 </span>
               )}
             </label>

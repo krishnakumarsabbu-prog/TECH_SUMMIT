@@ -10,7 +10,8 @@ import { Results } from './pages/Results';
 import { AlreadyPlayed } from './pages/AlreadyPlayed';
 import { Passport } from './pages/Passport';
 import { Button } from './components/Button';
-import { GitHubSyncModal } from './components/GitHubSyncModal';
+import { FirebaseStatusModal } from './components/FirebaseStatusModal';
+import { AdminSyncModal } from './components/AdminSyncModal';
 import { prepareQuestions } from './utils/quiz';
 import { submitResult, registerParticipant } from './services/submissionService';
 import {
@@ -28,10 +29,14 @@ import {
   isTestMode,
   getBoothParamFromUrl,
 } from './utils/storage';
-import { fetchParticipantFromResultRepo } from './services/resultRepoService';
+import { fetchParticipantFromFirestore } from './services/firebaseService';
 import { getBoothById, REQUIRED_BOOTHS_TO_WIN } from './data/boothsConfig';
 
 const QUESTION_COUNT = 5;
+
+async function fetchParticipantData(id: string) {
+  return fetchParticipantFromFirestore(id);
+}
 
 export default function App() {
   const [stage, setStage] = useState<AppStage>('WELCOME');
@@ -46,7 +51,8 @@ export default function App() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [testMode, setTestMode] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
+  const [isFirebaseModalOpen, setIsFirebaseModalOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
   // Initialize and route based on URL and stored state
   useEffect(() => {
@@ -87,7 +93,7 @@ export default function App() {
         const urlParams = new URLSearchParams(window.location.search);
         const paramEntId = urlParams.get('entId') || urlParams.get('uuid') || urlParams.get('id');
         if (paramEntId) {
-          fetchParticipantFromResultRepo(paramEntId).then((res) => {
+          fetchParticipantData(paramEntId).then((res: any) => {
             if (res.exists && res.participant) {
               setParticipant(res.participant);
               saveParticipant(res.participant);
@@ -141,7 +147,7 @@ export default function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const paramEntId = urlParams.get('entId') || urlParams.get('uuid') || urlParams.get('id');
     if (paramEntId && !savedParticipant) {
-      fetchParticipantFromResultRepo(paramEntId).then((res) => {
+      fetchParticipantData(paramEntId).then((res: any) => {
         if (res.exists && res.participant) {
           setParticipant(res.participant);
           saveParticipant(res.participant);
@@ -214,7 +220,7 @@ export default function App() {
       setParticipant(p);
       saveParticipant(p);
 
-      // restoredResults !== undefined means user was found in GitHub (even if they have 0 tests).
+      // restoredResults !== undefined means user was found in Firebase (even if they have 0 tests).
       // Only call registerParticipant for truly NEW users (restoredResults is undefined).
       if (restoredResults !== undefined) {
         // Existing user — restore their booth results into browser cache
@@ -223,10 +229,10 @@ export default function App() {
           saveAllBoothResults(restoredResults);
           console.log(`[Passport Restore] Restored ${Object.keys(restoredResults).length} booth test(s) for ${p.entId}`);
         } else {
-          console.log(`[Passport Restore] Existing user ${p.entId} found in GitHub — 0 tests to restore yet.`);
+          console.log(`[Passport Restore] Existing user ${p.entId} found in Firebase — 0 tests to restore yet.`);
         }
       } else {
-        // Truly new participant — push registration to GitHub TECH_SUMMIT_RESULT
+        // Truly new participant — push registration to Firebase Firestore
         registerParticipant(p).catch((err) => {
           console.warn('Registration sync error:', err);
         });
@@ -360,7 +366,7 @@ export default function App() {
 
       const completedCount = Object.keys(updatedBoothResults).length;
 
-      // Submit to GitHub result repository (TECH_SUMMIT_RESULT)
+      // Submit to Firebase Firestore database
       try {
         await submitResult(participant, persisted, computedResult, completedCount, updatedBoothResults);
       } catch {
@@ -427,6 +433,7 @@ export default function App() {
         onOpenPassport={participant ? handleOpenPassport : undefined}
         isPassportActive={stage === 'PASSPORT'}
         onGoHome={() => setStage('WELCOME')}
+        onOpenAdmin={() => setIsAdminModalOpen(true)}
       />
       <Layout>
         {loadError && (
@@ -512,21 +519,50 @@ export default function App() {
           />
         )}
 
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.75rem', marginBottom: '0.5rem' }}>
+          <button
+            type="button"
+            onClick={() => setIsAdminModalOpen(true)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#64748b',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              textDecoration: 'underline',
+              padding: '0.25rem 0.5rem',
+            }}
+          >
+            🔒 Organizer Login & Dashboard Sync
+          </button>
+        </div>
+
         {testMode && (
           <div className="ts-test-mode" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button variant="ghost" onClick={handleReset}>
               RESET ALL PARTICIPATION DATA
             </Button>
-            <Button variant="ghost" onClick={() => setIsGitHubModalOpen(true)}>
-              ⚙ GITHUB RESULTS SYNC
+            <Button variant="ghost" onClick={() => setIsFirebaseModalOpen(true)}>
+              🔥 FIREBASE STATUS
+            </Button>
+            <Button variant="ghost" onClick={() => setIsAdminModalOpen(true)}>
+              📊 ADMIN SYNC
             </Button>
           </div>
         )}
 
-        <GitHubSyncModal
-          isOpen={isGitHubModalOpen}
-          onClose={() => setIsGitHubModalOpen(false)}
+        <FirebaseStatusModal
+          isOpen={isFirebaseModalOpen}
+          onClose={() => setIsFirebaseModalOpen(false)}
           currentEntId={participant?.entId}
+        />
+
+        <AdminSyncModal
+          isOpen={isAdminModalOpen}
+          onClose={() => setIsAdminModalOpen(false)}
         />
       </Layout>
     </>

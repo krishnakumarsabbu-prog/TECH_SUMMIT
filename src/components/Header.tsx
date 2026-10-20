@@ -4,6 +4,7 @@ interface HeaderProps {
   onOpenPassport?: () => void;
   isPassportActive?: boolean;
   onGoHome?: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export function Header({
@@ -12,6 +13,7 @@ export function Header({
   onOpenPassport,
   isPassportActive = false,
   onGoHome,
+  onOpenAdmin,
 }: HeaderProps) {
   return (
     <header className="ts-header" role="banner">
@@ -51,6 +53,23 @@ export function Header({
                   ? `Winner (${completedCount}/9)`
                   : `Passport (${completedCount}/4)`}
               </span>
+            </button>
+          )}
+
+          {onOpenAdmin && (
+            <button
+              type="button"
+              className="ts-header__passport-btn"
+              onClick={onOpenAdmin}
+              title="Organizer Admin & GitHub Dashboard Sync"
+              style={{
+                background: 'rgba(56, 189, 248, 0.1)',
+                borderColor: 'rgba(56, 189, 248, 0.35)',
+                color: '#38bdf8',
+              }}
+            >
+              <span style={{ fontSize: '0.9rem' }}>📊</span>
+              <span className="ts-header__passport-text">Admin</span>
             </button>
           )}
         </div>
