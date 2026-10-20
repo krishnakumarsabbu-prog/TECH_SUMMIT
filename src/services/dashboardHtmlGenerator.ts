@@ -24,43 +24,66 @@ export function generateDashboardHtml(data: DashboardSummary): string {
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
+      /* Brand and Accents */
       --brand-primary: #269E9B;
       --brand-primary-light: #6DD5CF;
       --brand-primary-dark: #197E80;
-      --accent-gold: #F7C948;
-      --accent-gold-dark: #D9C69A;
-      --accent-blue: #438DAD;
+      --accent-blue: #3A84A7;
+      --accent-blue-light: #EBF6FA;
+      --accent-gold: #B8860B;
+      --accent-gold-dark: #8F5D00;
+      --accent-gold-light: #FFF8E6;
+      --accent-gold-border: #F3CF65;
       --logo-red: #D71E28;
-      --bg-dark: #0B1720;
-      --bg-card: rgba(18, 35, 47, 0.78);
-      --bg-card-hover: rgba(24, 46, 61, 0.92);
-      --border: rgba(109, 213, 207, 0.18);
-      --border-strong: rgba(109, 213, 207, 0.38);
-      --text-primary: #F1F7F9;
-      --text-secondary: #A0B9C6;
-      --text-muted: #6B8897;
-      --success: #10B981;
-      --success-bg: rgba(16, 185, 129, 0.15);
-      --warning: #F59E0B;
-      --font-display: 'Outfit', sans-serif;
-      --font-sans: 'Plus Jakarta Sans', sans-serif;
+
+      /* Surfaces (Executive Light Palette) */
+      --bg-body: #F4F8FA;
+      --bg-card: #FFFFFF;
+      --bg-card-muted: #F8FCFD;
+      --bg-card-hover: #F2FAF9;
+      --border: #DFEAED;
+      --border-strong: #C4D9DF;
+
+      /* Typography */
+      --text-primary: #1C3342;
+      --text-secondary: #4A6372;
+      --text-muted: #7E95A3;
+
+      /* Status */
+      --success: #0E8363;
+      --success-bg: #E8F7F2;
+      --success-border: #84DCBF;
+      --warning: #B45309;
+      --warning-bg: #FEF7EA;
+      --warning-border: #FCD38D;
+
+      /* Fonts */
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
+
+      /* Radii */
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
       --radius-xl: 26px;
+
+      /* Shadows & Elevation */
+      --shadow-sm: 0 2px 8px rgba(38, 70, 83, 0.04);
+      --shadow-md: 0 6px 20px rgba(38, 70, 83, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 14px 36px rgba(38, 70, 83, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
       --transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background-color: var(--bg-dark);
+      background-color: var(--bg-body);
       background-image:
-        radial-gradient(ellipse at 15% 10%, rgba(38, 158, 155, 0.18) 0%, transparent 45%),
-        radial-gradient(ellipse at 85% 25%, rgba(67, 141, 173, 0.16) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 80%, rgba(247, 201, 72, 0.08) 0%, transparent 55%),
-        linear-gradient(180deg, #0B1720 0%, #081118 100%);
+        radial-gradient(ellipse at 12% 0%, rgba(38, 158, 155, 0.09) 0%, transparent 45%),
+        radial-gradient(ellipse at 88% 12%, rgba(58, 132, 167, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(217, 198, 154, 0.12) 0%, transparent 55%),
+        linear-gradient(180deg, #F8FCFD 0%, #EFF5F7 100%);
       background-attachment: fixed;
       color: var(--text-primary);
       font-family: var(--font-sans);
@@ -72,9 +95,9 @@ export function generateDashboardHtml(data: DashboardSummary): string {
 
     /* Container */
     .container {
-      max-width: 1320px;
+      max-width: 1360px;
       margin: 0 auto;
-      padding: 24px 20px;
+      padding: 24px 24px;
     }
 
     /* Executive Top Bar */
@@ -82,12 +105,11 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 24px;
+      padding: 18px 28px;
       background: var(--bg-card);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-xl);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      box-shadow: var(--shadow-md);
       margin-bottom: 28px;
       flex-wrap: wrap;
       gap: 16px;
@@ -102,9 +124,9 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     .brand-accent-bar {
       width: 5px;
       height: 48px;
-      background: linear-gradient(180deg, var(--logo-red) 0%, var(--accent-gold) 100%);
+      background: linear-gradient(180deg, var(--logo-red) 0%, #E6A217 100%);
       border-radius: 4px;
-      box-shadow: 0 0 12px rgba(215, 30, 40, 0.4);
+      box-shadow: 0 0 10px rgba(215, 30, 40, 0.3);
     }
 
     .brand-copy {
@@ -126,11 +148,11 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.02em;
-      color: #FFFFFF;
+      color: var(--text-primary);
     }
 
     .summit-title span {
-      background: linear-gradient(135deg, var(--brand-primary-light) 0%, var(--brand-primary) 100%);
+      background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -146,13 +168,14 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 14px;
+      padding: 8px 16px;
       border-radius: 999px;
-      background: rgba(38, 158, 155, 0.12);
-      border: 1px solid var(--border);
-      font-size: 12px;
-      color: var(--brand-primary-light);
+      background: #E8F6F6;
+      border: 1px solid #BCE5E3;
+      font-size: 12.5px;
+      color: #157375;
       font-family: var(--font-mono);
+      font-weight: 600;
     }
 
     .pulse-dot {
@@ -160,7 +183,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       height: 8px;
       border-radius: 50%;
       background: var(--success);
-      box-shadow: 0 0 8px var(--success);
+      box-shadow: 0 0 8px rgba(14, 131, 99, 0.6);
       animation: pulse 1.8s infinite;
     }
 
@@ -173,12 +196,12 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 9px 18px;
+      padding: 10px 20px;
       border-radius: var(--radius-sm);
       font-family: var(--font-display);
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 750;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
       cursor: pointer;
       transition: all var(--transition);
       text-decoration: none;
@@ -189,25 +212,25 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     .btn-primary {
       background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
       color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(38, 158, 155, 0.35);
-      border: 1px solid var(--brand-primary-light);
+      box-shadow: 0 4px 14px rgba(38, 158, 155, 0.28);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(38, 158, 155, 0.55);
+      box-shadow: 0 8px 22px rgba(38, 158, 155, 0.42);
     }
 
     .btn-outline {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-strong);
       color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
     }
 
     .btn-outline:hover {
-      background: rgba(38, 158, 155, 0.15);
+      background: #EDF7F9;
       border-color: var(--brand-primary);
-      color: #FFFFFF;
+      color: var(--brand-primary-dark);
       transform: translateY(-1px);
     }
 
@@ -215,7 +238,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 28px;
     }
 
@@ -227,26 +250,24 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       display: flex;
       align-items: flex-start;
       gap: 16px;
-      backdrop-filter: blur(12px);
       transition: all var(--transition);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+      box-shadow: var(--shadow-md);
     }
 
     .kpi-card:hover {
-      border-color: var(--brand-primary-light);
-      background: var(--bg-card-hover);
+      border-color: var(--brand-primary);
       transform: translateY(-3px);
-      box-shadow: 0 14px 34px rgba(38, 158, 155, 0.18);
+      box-shadow: var(--shadow-lg);
     }
 
     .kpi-card--gold {
-      border-color: rgba(247, 201, 72, 0.4);
-      background: linear-gradient(145deg, rgba(32, 40, 48, 0.85) 0%, rgba(45, 42, 28, 0.65) 100%);
+      border-color: var(--accent-gold-border);
+      background: linear-gradient(145deg, #FFFFFF 0%, #FFFDF5 100%);
     }
 
     .kpi-card--gold:hover {
       border-color: var(--accent-gold);
-      box-shadow: 0 14px 34px rgba(247, 201, 72, 0.2);
+      box-shadow: 0 12px 30px rgba(217, 163, 24, 0.16);
     }
 
     .kpi-icon {
@@ -254,7 +275,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       line-height: 1;
       padding: 10px;
       border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.05);
+      background: #F4F9FB;
       border: 1px solid var(--border);
     }
 
@@ -276,12 +297,12 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       font-family: var(--font-display);
       font-size: 34px;
       font-weight: 900;
-      color: #FFFFFF;
+      color: #162E3D;
       line-height: 1.1;
     }
 
     .kpi-card--gold .kpi-value {
-      color: var(--accent-gold);
+      color: var(--accent-gold-dark);
     }
 
     .kpi-sub {
@@ -293,16 +314,16 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     /* Filter Bar */
     .filter-section {
       background: var(--bg-card);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 18px 24px;
-      backdrop-filter: blur(12px);
       margin-bottom: 26px;
       display: flex;
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
       justify-content: space-between;
+      box-shadow: var(--shadow-md);
     }
 
     .filter-controls {
@@ -315,17 +336,17 @@ export function generateDashboardHtml(data: DashboardSummary): string {
 
     .search-input-wrap {
       position: relative;
-      min-width: 260px;
+      min-width: 280px;
       flex: 1;
     }
 
     .search-input-wrap input {
       width: 100%;
-      background: rgba(8, 17, 24, 0.85);
-      border: 1px solid var(--border);
+      background: #F7FBFC;
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 10px 14px 10px 38px;
-      color: #FFFFFF;
+      color: var(--text-primary);
       font-family: var(--font-sans);
       font-size: 14px;
       outline: none;
@@ -333,8 +354,9 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     }
 
     .search-input-wrap input:focus {
-      border-color: var(--brand-primary-light);
-      box-shadow: 0 0 0 3px rgba(38, 158, 155, 0.25);
+      background: #FFFFFF;
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 3px rgba(38, 158, 155, 0.18);
     }
 
     .search-icon {
@@ -348,21 +370,23 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     }
 
     .filter-select {
-      background: rgba(8, 17, 24, 0.85);
-      border: 1px solid var(--border);
+      background: #F7FBFC;
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 10px 14px;
-      color: #FFFFFF;
+      color: var(--text-primary);
       font-family: var(--font-sans);
       font-size: 13.5px;
       cursor: pointer;
       outline: none;
-      min-width: 170px;
+      min-width: 180px;
       transition: all var(--transition);
     }
 
     .filter-select:focus {
-      border-color: var(--brand-primary-light);
+      background: #FFFFFF;
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 3px rgba(38, 158, 155, 0.18);
     }
 
     .filter-stats-count {
@@ -373,7 +397,8 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     }
 
     .filter-stats-count strong {
-      color: var(--brand-primary-light);
+      color: var(--brand-primary-dark);
+      font-weight: 800;
     }
 
     /* Tabs Bar */
@@ -382,7 +407,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       align-items: center;
       gap: 8px;
       margin-bottom: 22px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid var(--border);
       padding-bottom: 12px;
       overflow-x: auto;
     }
@@ -393,7 +418,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       gap: 8px;
       padding: 10px 20px;
       background: transparent;
-      border: 1px solid transparent;
+      border: 1.5px solid transparent;
       border-radius: var(--radius-md);
       color: var(--text-secondary);
       font-family: var(--font-display);
@@ -406,15 +431,14 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     }
 
     .tab-btn:hover {
-      color: #FFFFFF;
-      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      background: #EDF7F9;
     }
 
     .tab-btn.active {
       color: #FFFFFF;
-      background: rgba(38, 158, 155, 0.2);
-      border-color: var(--brand-primary);
-      box-shadow: 0 4px 14px rgba(38, 158, 155, 0.2);
+      background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+      box-shadow: 0 4px 14px rgba(38, 158, 155, 0.28);
     }
 
     .tab-badge {
@@ -425,12 +449,12 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       font-size: 11px;
       font-weight: 800;
       font-family: var(--font-mono);
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
+      background: rgba(0, 0, 0, 0.06);
+      color: var(--text-secondary);
     }
 
     .tab-btn.active .tab-badge {
-      background: var(--brand-primary);
+      background: rgba(255, 255, 255, 0.25);
       color: #FFFFFF;
     }
 
@@ -452,11 +476,10 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     /* Data Table Card */
     .table-card {
       background: var(--bg-card);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
       border-radius: var(--radius-xl);
       overflow: hidden;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 12px 36px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow-md);
     }
 
     .table-header-strip {
@@ -464,7 +487,8 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       justify-content: space-between;
       align-items: center;
       padding: 20px 24px;
-      border-bottom: 1px solid var(--border);
+      background: #FAFDFE;
+      border-bottom: 1.5px solid var(--border);
       flex-wrap: wrap;
       gap: 12px;
     }
@@ -473,7 +497,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       font-family: var(--font-display);
       font-size: 20px;
       font-weight: 800;
-      color: #FFFFFF;
+      color: var(--text-primary);
     }
 
     .table-wrap {
@@ -489,33 +513,34 @@ export function generateDashboardHtml(data: DashboardSummary): string {
 
     th {
       padding: 14px 20px;
-      background: rgba(8, 17, 24, 0.6);
+      background: #F0F6F8;
       font-family: var(--font-display);
       font-size: 11.5px;
       font-weight: 800;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
+      color: #3E5A6B;
+      border-bottom: 1.5px solid var(--border);
       cursor: pointer;
       user-select: none;
       white-space: nowrap;
     }
 
     th:hover {
-      color: var(--brand-primary-light);
+      color: var(--brand-primary-dark);
+      background: #E8F2F5;
     }
 
     td {
       padding: 16px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid #EEF4F6;
       font-size: 14px;
       color: var(--text-primary);
       vertical-align: middle;
     }
 
     tr:hover td {
-      background: rgba(38, 158, 155, 0.06);
+      background: var(--bg-card-hover);
     }
 
     .rank-cell {
@@ -525,24 +550,24 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       width: 60px;
     }
 
-    .rank-1 { color: #F7C948; text-shadow: 0 0 10px rgba(247, 201, 72, 0.6); }
-    .rank-2 { color: #E2E8F0; }
-    .rank-3 { color: #D97706; }
+    .rank-1 { color: #8F5D00; font-weight: 900; }
+    .rank-2 { color: #475569; font-weight: 900; }
+    .rank-3 { color: #9C4A1A; font-weight: 900; }
 
     .entid-badge {
       font-family: var(--font-mono);
       font-size: 12.5px;
       font-weight: 700;
-      color: var(--brand-primary-light);
-      background: rgba(38, 158, 155, 0.12);
+      color: #157375;
+      background: #EDF8F8;
       padding: 3px 8px;
       border-radius: 4px;
-      border: 1px solid rgba(38, 158, 155, 0.25);
+      border: 1px solid #B8E4E2;
     }
 
     .name-strong {
       font-weight: 750;
-      color: #FFFFFF;
+      color: #162E3D;
     }
 
     .lob-pill {
@@ -550,8 +575,8 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       font-size: 12px;
       padding: 3px 10px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #F2F7F9;
+      border: 1px solid var(--border);
       color: var(--text-secondary);
       max-width: 220px;
       white-space: nowrap;
@@ -569,7 +594,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     .mini-track {
       flex: 1;
       height: 8px;
-      background: rgba(255, 255, 255, 0.1);
+      background: #E4EFF2;
       border-radius: 999px;
       overflow: hidden;
     }
@@ -577,11 +602,11 @@ export function generateDashboardHtml(data: DashboardSummary): string {
     .mini-fill {
       height: 100%;
       border-radius: 999px;
-      background: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-primary-light) 100%);
+      background: linear-gradient(90deg, #6DD5CF 0%, #269E9B 100%);
     }
 
     .mini-fill--gold {
-      background: linear-gradient(90deg, #F59E0B 0%, #F7C948 100%);
+      background: linear-gradient(90deg, #F59E0B 0%, #C59310 100%);
     }
 
     .status-badge-winner {
@@ -590,9 +615,9 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       gap: 4px;
       padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(247, 201, 72, 0.15);
-      border: 1px solid rgba(247, 201, 72, 0.45);
-      color: var(--accent-gold);
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success);
       font-family: var(--font-display);
       font-size: 11.5px;
       font-weight: 800;
@@ -604,17 +629,17 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       gap: 4px;
       padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-muted);
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--warning);
       font-size: 11.5px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     /* 9 Booths Cards Grid */
     .booths-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
       gap: 20px;
     }
 
@@ -627,13 +652,13 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       flex-direction: column;
       justify-content: space-between;
       transition: all var(--transition);
-      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-md);
     }
 
     .booth-card:hover {
       border-color: var(--brand-primary);
       transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(38, 158, 155, 0.2);
+      box-shadow: var(--shadow-lg);
     }
 
     .booth-card-header {
@@ -650,15 +675,16 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       letter-spacing: 1px;
       padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(38, 158, 155, 0.15);
-      color: var(--brand-primary-light);
+      background: #EDF8F8;
+      border: 1px solid #B8E4E2;
+      color: #157375;
     }
 
     .booth-card-title {
       font-family: var(--font-display);
       font-size: 19px;
       font-weight: 800;
-      color: #FFFFFF;
+      color: var(--text-primary);
       margin-bottom: 16px;
       line-height: 1.25;
     }
@@ -667,7 +693,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      background: rgba(8, 17, 24, 0.6);
+      background: #F7FBFC;
       padding: 12px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
@@ -693,7 +719,7 @@ export function generateDashboardHtml(data: DashboardSummary): string {
       font-family: var(--font-display);
       font-size: 18px;
       font-weight: 800;
-      color: #FFFFFF;
+      color: #162E3D;
     }
 
     /* Empty state */

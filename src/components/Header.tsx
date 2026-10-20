@@ -46,12 +46,19 @@ export function Header({
               title="View your challenge passport and booth progress"
             >
               <span className="ts-header__passport-icon">{isWinner ? '🏆' : '🏅'}</span>
-              <span className="ts-header__passport-text">
+              <span className="ts-header__passport-text ts-header__passport-text--full">
                 {isPassportActive
                   ? 'Close Passport'
                   : isWinner
                   ? `Winner (${completedCount}/9)`
                   : `Passport (${completedCount}/4)`}
+              </span>
+              <span className="ts-header__passport-text ts-header__passport-text--compact">
+                {isPassportActive
+                  ? 'Close'
+                  : isWinner
+                  ? `Winner (${completedCount})`
+                  : `${completedCount}/4`}
               </span>
             </button>
           )}
