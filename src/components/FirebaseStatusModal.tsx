@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { testFirestoreConnection } from '../services/firebaseService';
 import { Button } from './Button';
 
@@ -15,134 +15,104 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
 }) => {
   const [status, setStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
-  const [projectId, setProjectId] = useState('');
-
-  useEffect(() => {
-    if (isOpen) {
-      setStatus('idle');
-      setStatusMsg('');
-      handleTest();
-    }
-  }, [isOpen]);
+  const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
 
   if (!isOpen) return null;
 
-  const handleTest = async () => {
+  const handleTestConnection = async () => {
     setStatus('testing');
-    setStatusMsg('Testing connection to Firebase Firestore...');
-    const res = await testFirestoreConnection();
-    setProjectId(res.projectId);
-    if (res.success) {
-      setStatus('success');
-      setStatusMsg(res.message);
-    } else {
+    setStatusMsg('Testing read/write connectivity to Firestore collection `_connection_test`...');
+    try {
+      const res = await testFirestoreConnection();
+      if (res.success) {
+        setStatus('success');
+        setStatusMsg(res.message);
+      } else {
+        setStatus('error');
+        setStatusMsg(res.message);
+      }
+    } catch (err: any) {
       setStatus('error');
-      setStatusMsg(res.message);
+      setStatusMsg(err.message || 'Error executing ping test.');
     }
   };
 
   return (
-    <div className="ts-qr-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
-      <div
-        className="ts-qr-modal-content"
-        style={{ maxWidth: '520px', textAlign: 'left' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--ts-text-primary, #fff)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            🔥 Firebase Firestore Database
-          </h2>
+    <div className="ts-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="ts-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="ts-modal-header">
+          <div className="ts-modal-header__brand">
+            <div className="ts-modal-header__icon-badge" aria-hidden="true">
+              🔥
+            </div>
+            <div>
+              <div className="ts-modal-eyebrow">DATABASE DIAGNOSTICS</div>
+              <h2 className="ts-modal-title">Firebase Firestore</h2>
+            </div>
+          </div>
           <button
+            type="button"
+            className="ts-modal-close-btn"
             onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--ts-text-muted, #94a3b8)',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
+            aria-label="Close dialog"
           >
             ✕
           </button>
         </div>
 
-        <p style={{ fontSize: '0.875rem', color: 'var(--ts-text-muted, #94a3b8)', marginBottom: '1rem', lineHeight: '1.5' }}>
-          All summit attendee registrations, quiz scores, and passport statuses are stored exclusively in Firebase Firestore.
-        </p>
+        <div className="ts-modal-body">
+          <p className="ts-modal-desc">
+            All summit attendee registrations, quiz scores, and passport milestones are saved directly to Firebase Firestore collections.
+          </p>
 
-        <div style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.04)', padding: '0.85rem 1rem', borderRadius: '8px' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--ts-text-muted, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Connected Firebase Project
-          </div>
-          <div style={{ fontSize: '1rem', fontWeight: 600, color: '#38bdf8', marginTop: '0.25rem', wordBreak: 'break-all' }}>
-            {projectId || 'tech-summit-2026-c9d17'}
-          </div>
-
-          <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.8rem' }}>
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '4px' }}>
-              <span style={{ color: 'var(--ts-text-muted, #94a3b8)' }}>Collection 1:</span>
-              <div style={{ color: '#a78bfa', fontWeight: 600 }}>participants/{'{entId}'}</div>
+          <div className="ts-sync-destination-card">
+            <div className="ts-sync-dest-row">
+              <span className="ts-sync-dest-label">Connected Project:</span>
+              <span className="ts-sync-dest-value ts-sync-dest-repo">{projectId || 'tech-summit-2026-c9d17'}</span>
             </div>
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '4px' }}>
-              <span style={{ color: 'var(--ts-text-muted, #94a3b8)' }}>Collection 2:</span>
-              <div style={{ color: '#a78bfa', fontWeight: 600 }}>submissions/{'{subId}'}</div>
+
+            <div className="ts-sync-dest-summary">
+              <span className="ts-sync-summary-title">Active Firestore Collections:</span>
+              <div className="ts-sync-chips">
+                <span className="ts-chip">📁 participants/{'{entId}'}</span>
+                <span className="ts-chip">📁 participants/{'{entId}'}/booths/{'{boothNum}'}</span>
+                <span className="ts-chip">📁 submissions/{'{submissionId}'}</span>
+              </div>
             </div>
+
+            {currentEntId && (
+              <div style={{ marginTop: '8px', fontSize: '12.5px', color: 'var(--success)' }}>
+                Active Session Document: <strong>participants/{currentEntId.toUpperCase()}</strong>
+              </div>
+            )}
           </div>
 
-          {currentEntId && (
-            <div style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '0.75rem' }}>
-              Active Attendee Document: <code>participants/{currentEntId.toUpperCase()}</code>
+          {status !== 'idle' && (
+            <div className={`ts-modal-alert ts-modal-alert--${status === 'success' ? 'success' : status === 'error' ? 'error' : 'info'}`}>
+              <div className="ts-modal-alert-header">
+                <span className="ts-alert-icon">
+                  {status === 'testing' ? '⏳' : status === 'success' ? '✓' : '✕'}
+                </span>
+                <strong>
+                  {status === 'testing' ? 'Testing Connection...' : status === 'success' ? 'Connection Successful!' : 'Connection Warning'}
+                </strong>
+              </div>
+              <div className="ts-modal-alert-msg">{statusMsg}</div>
             </div>
           )}
-        </div>
 
-        {status !== 'idle' && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              borderRadius: '8px',
-              fontSize: '0.875rem',
-              marginBottom: '1rem',
-              background:
-                status === 'testing'
-                  ? 'rgba(56, 189, 248, 0.1)'
-                  : status === 'success'
-                  ? 'rgba(34, 197, 94, 0.1)'
-                  : 'rgba(239, 68, 68, 0.1)',
-              border: `1px solid ${
-                status === 'testing'
-                  ? '#38bdf8'
-                  : status === 'success'
-                  ? '#22c55e'
-                  : '#ef4444'
-              }`,
-              color:
-                status === 'testing'
-                  ? '#38bdf8'
-                  : status === 'success'
-                  ? '#22c55e'
-                  : '#ef4444',
-            }}
-          >
-            {status === 'testing' && '⏳ '}
-            {status === 'success' && '✓ '}
-            {status === 'error' && '✕ '}
-            {statusMsg}
+          <div className="ts-modal-actions">
+            <Button variant="ghost" onClick={onClose}>
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleTestConnection}
+              disabled={status === 'testing'}
+            >
+              {status === 'testing' ? 'Pinging Firestore...' : '⚡ Test Connection'}
+            </Button>
           </div>
-        )}
-
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-          <Button
-            variant="secondary"
-            onClick={handleTest}
-            disabled={status === 'testing'}
-          >
-            {status === 'testing' ? 'Testing...' : 'Test Database Connection'}
-          </Button>
-          <Button variant="primary" onClick={onClose}>
-            Done
-          </Button>
         </div>
       </div>
     </div>

@@ -255,61 +255,40 @@ export function ParticipantDetails({
         </p>
 
         {existingRecord && (
-          <div
-            style={{
-              background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(16,185,129,0.10) 100%)',
-              border: '1.5px solid rgba(34,197,94,0.55)',
-              borderRadius: '12px',
-              padding: '16px 20px',
-              marginBottom: '22px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-              <span style={{ fontSize: '30px', flexShrink: 0, lineHeight: '1' }}>✅</span>
-              <div style={{ flex: 1 }}>
-                <strong style={{ color: '#16a34a', display: 'block', fontSize: '15.5px', marginBottom: '5px' }}>
-                  Welcome back, {existingRecord.participant.name}!
-                </strong>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: '1.5' }}>
-                  EntID: <strong>{existingRecord.participant.entId}</strong>
-                  {' · '}
-                  {testCount > 0 ? (
-                    <>
-                      <strong style={{ color: 'var(--brand-red)' }}>
-                        {testCount} booth test{testCount !== 1 ? 's' : ''} completed
-                      </strong>{' '}
-                      — your passport badges will be restored.
-                    </>
-                  ) : (
-                    'Registered — no booth tests yet. Ready to start!'
-                  )}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    id="btn-continue-as-existing"
-                    onClick={() => navigateAsExisting(existingRecord)}
-                    style={{
-                      background: 'linear-gradient(135deg, #16a34a, #15803d)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '10px 22px',
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      letterSpacing: '0.4px',
-                      boxShadow: '0 2px 8px rgba(22,163,74,0.35)',
-                    }}
-                  >
-                    {targetBooth ? `▶ Go to Booth ${targetBooth.number} Quiz` : '🎫 Open My Passport'}
-                  </button>
-                  {autoNavCountdown !== null && autoNavCountdown > 0 && (
-                    <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                      Auto-continuing in {autoNavCountdown}s…
-                    </span>
-                  )}
-                </div>
+          <div className="ts-verified-user-card">
+            <div className="ts-verified-icon" aria-hidden="true">✅</div>
+            <div className="ts-verified-content">
+              <h3 className="ts-verified-title">
+                Welcome back, {existingRecord.participant.name}!
+              </h3>
+              <div className="ts-verified-meta">
+                EntID: <strong>{existingRecord.participant.entId}</strong>
+                {' • '}
+                {testCount > 0 ? (
+                  <>
+                    <strong style={{ color: 'var(--brand-primary-dark)' }}>
+                      {testCount} booth quiz{testCount !== 1 ? 'zes' : ''} completed
+                    </strong>{' '}
+                    — your passport milestones will be restored automatically.
+                  </>
+                ) : (
+                  'Registered participant — ready to begin booth challenges!'
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  id="btn-continue-as-existing"
+                  className="ts-verified-btn"
+                  onClick={() => navigateAsExisting(existingRecord)}
+                >
+                  {targetBooth ? `▶ Go to Booth ${targetBooth.number} Quiz` : '🎫 Open My Passport →'}
+                </button>
+                {autoNavCountdown !== null && autoNavCountdown > 0 && (
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    Auto-continuing in {autoNavCountdown}s…
+                  </span>
+                )}
               </div>
             </div>
           </div>

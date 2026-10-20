@@ -1,4 +1,5 @@
 import { fetchAllParticipants, fetchAllSubmissions } from './firebaseService';
+import { generateDashboardHtml } from './dashboardHtmlGenerator';
 
 export const ADMIN_CREDENTIALS = {
   username: 'admin',
@@ -98,126 +99,133 @@ export async function buildDashboardData(): Promise<DashboardSummary> {
   let totalQuestionsAnswered = 0;
   let prizeEligibleCount = 0;
 
-  participants.forEach((p) => {
-    totalScoreAwarded += p.totalScore || 0;
-    totalQuestionsAnswered += p.totalQuestions || 0;
-    if (p.isPrizeEligible || (p.totalTestsAppeared || 0) >= 4) {
-      prizeEligibleCount += 1;
-    }
-  });
+  // 1. Group submissions by boothNumber
+  const boothStatsMap = new Map<number, {
+    totalAttempts: number;
+    totalScore: number;
+    totalQuestions: number;
+    totalTime: number;
+  }>();
 
-  const activeParticipants = participants.filter((p) => (p.totalTestsAppeared || 0) > 0);
-  const avgAccuracy =
-    activeParticipants.length > 0
-      ? Math.round(
-          activeParticipants.reduce((sum, p) => sum + (p.overallAccuracy || 0), 0) /
-            activeParticipants.length
-        )
-      : 0;
+  for (let b = 1; b <= 9; b++) {
+    boothStatsMap.set(b, { totalAttempts: 0, totalScore: 0, totalQuestions: 0, totalTime: 0 });
+  }
 
-  // 1. Booth breakdown (1 to 9)
-  const boothBreakdown = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((boothNum) => {
-    const boothSubs = submissions.filter(
-      (s) => s.booth?.boothNumber === boothNum || s.booth?.boothId === `booth-${boothNum}`
-    );
-    const count = boothSubs.length;
-    const avgScore =
-      count > 0
-        ? +(boothSubs.reduce((acc, s) => acc + (s.quiz?.score || 0), 0) / count).toFixed(1)
-        : 0;
-    const avgPct =
-      count > 0
-        ? Math.round(boothSubs.reduce((acc, s) => acc + (s.quiz?.percentage || 0), 0) / count)
-        : 0;
-    const avgTime =
-      count > 0
-        ? Math.round(boothSubs.reduce((acc, s) => acc + (s.quiz?.timeTakenSeconds || 0), 0) / count)
-        : 0;
+  for (const sub of submissions) {
+    const bNum = Number(sub.boothNumber) || 1;
+    const stats = boothStatsMap.get(bNum) || { totalAttempts: 0, totalScore: 0, totalQuestions: 0, totalTime: 0 };
+    stats.totalAttempts += 1;
+    stats.totalScore += Number(sub.score) || 0;
+    stats.totalQuestions += Number(sub.totalQuestions) || 5;
+    stats.totalTime += Number(sub.timeTakenSeconds) || 0;
+    boothStatsMap.set(bNum, stats);
+
+    totalScoreAwarded += Number(sub.score) || 0;
+    totalQuestionsAnswered += Number(sub.totalQuestions) || 5;
+  }
+
+  const boothBreakdown = Array.from(boothStatsMap.entries()).map(([boothNum, stats]) => {
+    const avgScore = stats.totalAttempts > 0 ? Number((stats.totalScore / stats.totalAttempts).toFixed(2)) : 0;
+    const avgAcc = stats.totalQuestions > 0 ? Math.round((stats.totalScore / stats.totalQuestions) * 100) : 0;
+    const avgTime = stats.totalAttempts > 0 ? Math.round(stats.totalTime / stats.totalAttempts) : 0;
 
     return {
       boothNumber: boothNum,
       boothTitle: BOOTH_TITLES[boothNum] || `Booth ${boothNum}`,
-      totalAttempts: count,
+      totalAttempts: stats.totalAttempts,
       averageScore: avgScore,
-      averageAccuracy: avgPct,
+      averageAccuracy: avgAcc,
       averageTimeSeconds: avgTime,
     };
   });
 
-  // 2. LOB breakdown
-  const lobMap: Record<string, { participants: any[] }> = {};
-  participants.forEach((p) => {
-    const lob = p.lob || 'Other';
-    if (!lobMap[lob]) lobMap[lob] = { participants: [] };
-    lobMap[lob].participants.push(p);
-  });
+  // 2. Aggregate per participant (leaderboard & prize winners)
+  const leaderboardRaw = participants.map((p) => {
+    const completedCount = Number(p.totalTestsAppeared) || Number(p.completedCount) || (p.boothsCompleted ? Object.keys(p.boothsCompleted).length : 0);
+    const score = Number(p.totalScore) || 0;
+    const questions = Number(p.totalQuestions) || (completedCount * 5);
+    const acc = questions > 0 ? Math.round((score / questions) * 100) : 0;
+    const isWinner = Boolean(p.isWinner) || completedCount >= 4;
 
-  const lobBreakdown = Object.entries(lobMap).map(([lob, data]) => {
-    const pCount = data.participants.length;
-    const avgScore =
-      pCount > 0
-        ? +(data.participants.reduce((sum, p) => sum + (p.totalScore || 0), 0) / pCount).toFixed(1)
-        : 0;
-    const prizeCount = data.participants.filter(
-      (p) => p.isPrizeEligible || (p.totalTestsAppeared || 0) >= 4
-    ).length;
+    if (isWinner) prizeEligibleCount++;
 
     return {
-      lob,
-      participantCount: pCount,
-      averageScore: avgScore,
-      prizeEligibleCount: prizeCount,
+      entId: p.entId || p.id || 'N/A',
+      name: p.name || 'Anonymous Attendee',
+      lob: p.lob || 'General',
+      totalScore: score,
+      totalQuestions: questions,
+      overallAccuracy: acc,
+      totalTestsAppeared: completedCount,
+      isPrizeEligible: isWinner,
+      lastUpdated: p.lastUpdated || new Date().toISOString(),
     };
   });
 
-  // 3. Leaderboard (sorted by totalScore DESC, accuracy DESC, tests DESC)
-  const sortedParticipants = [...participants].sort((a, b) => {
-    if ((b.totalScore || 0) !== (a.totalScore || 0)) {
-      return (b.totalScore || 0) - (a.totalScore || 0);
+  // Sort leaderboard: tests completed DESC, score DESC, accuracy DESC
+  leaderboardRaw.sort((a, b) => {
+    if (b.totalTestsAppeared !== a.totalTestsAppeared) {
+      return b.totalTestsAppeared - a.totalTestsAppeared;
     }
-    if ((b.overallAccuracy || 0) !== (a.overallAccuracy || 0)) {
-      return (b.overallAccuracy || 0) - (a.overallAccuracy || 0);
+    if (b.totalScore !== a.totalScore) {
+      return b.totalScore - a.totalScore;
     }
-    return (b.totalTestsAppeared || 0) - (a.totalTestsAppeared || 0);
+    return b.overallAccuracy - a.overallAccuracy;
   });
 
-  const leaderboard = sortedParticipants.map((p, idx) => ({
+  const leaderboard = leaderboardRaw.map((entry, idx) => ({
     rank: idx + 1,
-    entId: p.entId,
-    name: p.name,
-    lob: p.lob || 'N/A',
-    totalScore: p.totalScore || 0,
-    totalQuestions: p.totalQuestions || 0,
-    overallAccuracy: p.overallAccuracy || 0,
-    totalTestsAppeared: p.totalTestsAppeared || 0,
-    isPrizeEligible: Boolean(p.isPrizeEligible || (p.totalTestsAppeared || 0) >= 4),
-    lastUpdated: p.lastUpdated || p.registeredAt || new Date().toISOString(),
+    ...entry,
   }));
 
-  // 4. Prize-eligible winners list
   const prizeEligibleWinners = leaderboard
-    .filter((p) => p.isPrizeEligible)
-    .map((p, idx) => ({
+    .filter((entry) => entry.isPrizeEligible)
+    .map((entry, idx) => ({
       rank: idx + 1,
-      entId: p.entId,
-      name: p.name,
-      lob: p.lob,
-      totalScore: p.totalScore,
-      overallAccuracy: p.overallAccuracy,
-      totalTestsAppeared: p.totalTestsAppeared,
+      entId: entry.entId,
+      name: entry.name,
+      lob: entry.lob,
+      totalScore: entry.totalScore,
+      overallAccuracy: entry.overallAccuracy,
+      totalTestsAppeared: entry.totalTestsAppeared,
     }));
+
+  // 3. Aggregate by Line of Business (LOB)
+  const lobMap = new Map<string, { count: number; totalScore: number; winners: number }>();
+
+  for (const entry of leaderboardRaw) {
+    const lobName = entry.lob || 'Other';
+    const stats = lobMap.get(lobName) || { count: 0, totalScore: 0, winners: 0 };
+    stats.count += 1;
+    stats.totalScore += entry.totalScore;
+    if (entry.isPrizeEligible) stats.winners += 1;
+    lobMap.set(lobName, stats);
+  }
+
+  const lobBreakdown = Array.from(lobMap.entries())
+    .map(([lobName, stats]) => ({
+      lob: lobName,
+      participantCount: stats.count,
+      averageScore: stats.count > 0 ? Number((stats.totalScore / stats.count).toFixed(1)) : 0,
+      prizeEligibleCount: stats.winners,
+    }))
+    .sort((a, b) => b.participantCount - a.participantCount);
+
+  const globalAccuracy = totalQuestionsAnswered > 0
+    ? Math.round((totalScoreAwarded / totalQuestionsAnswered) * 100)
+    : 0;
 
   return {
     generatedAt: new Date().toISOString(),
-    summitName: 'Technology Summit 2026 — The 60-Second Tech Challenge',
+    summitName: 'Wells Fargo Technology Summit 2026',
     targetRepo: repo,
     stats: {
       totalRegisteredParticipants: totalRegistered,
       totalSubmissionsRecorded: totalSubmissions,
       totalPrizeEligibleAttendees: prizeEligibleCount,
-      summitAverageAccuracy: avgAccuracy,
-      totalScoreAwarded: totalScoreAwarded,
-      totalQuestionsAnswered: totalQuestionsAnswered,
+      summitAverageAccuracy: globalAccuracy,
+      totalScoreAwarded,
+      totalQuestionsAnswered,
     },
     boothBreakdown,
     lobBreakdown,
@@ -228,13 +236,74 @@ export async function buildDashboardData(): Promise<DashboardSummary> {
 }
 
 /**
- * Pushes the complete Dashboard Summary JSON to TECH_SUMMIT_RESULT GitHub repository
+ * Helper to push a single file to GitHub via GitHub Contents REST API
+ */
+async function pushSingleFileToGitHub(
+  repo: string,
+  filePath: string,
+  content: string,
+  token: string,
+  commitMsg: string
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+  let existingSha: string | undefined;
+
+  try {
+    const getRes = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+      },
+    });
+    if (getRes.ok) {
+      const fileInfo = await getRes.json();
+      existingSha = fileInfo.sha;
+    }
+  } catch {
+    // New file, ignore
+  }
+
+  const putRes = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message: commitMsg,
+      content: toBase64Utf8(content),
+      sha: existingSha,
+    }),
+  });
+
+  if (putRes.ok) {
+    const res = await putRes.json();
+    return {
+      success: true,
+      url: res?.commit?.html_url || `https://github.com/${repo}/blob/main/${filePath}`,
+    };
+  } else {
+    const err = await putRes.json().catch(() => ({}));
+    return {
+      success: false,
+      error: `(${putRes.status}): ${err.message || 'Commit failed'}`,
+    };
+  }
+}
+
+/**
+ * Queries Firebase Firestore, compiles the Summit Dashboard JSON AND interactive Dashboard HTML,
+ * and pushes both to GitHub repository (TECH_SUMMIT_RESULT).
  */
 export async function syncDashboardToGitHub(): Promise<{
   success: boolean;
   message: string;
   data?: DashboardSummary;
   commitUrl?: string;
+  htmlUrl?: string;
+  pagesUrl?: string;
+  htmlContent?: string;
 }> {
   const token = (import.meta as any).env?.VITE_GITHUB_TOKEN;
   const repo = (import.meta as any).env?.VITE_GITHUB_RESULT_REPO || 'krishnakumarsabbu-prog/TECH_SUMMIT_RESULT';
@@ -251,58 +320,59 @@ export async function syncDashboardToGitHub(): Promise<{
     const dashboardData = await buildDashboardData();
     const jsonContent = JSON.stringify(dashboardData, null, 2);
 
-    const filePath = 'dashboard/summit_dashboard.json';
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+    // 2. Generate the self-contained Executive Dashboard HTML
+    const htmlContent = generateDashboardHtml(dashboardData);
 
-    // 2. Fetch existing SHA if file already exists
-    let existingSha: string | undefined;
-    try {
-      const getRes = await fetch(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-        },
-      });
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        existingSha = fileInfo.sha;
-      }
-    } catch {
-      // New file
-    }
+    const timestampStr = new Date().toLocaleTimeString();
+    const commitMsg = `[Admin Sync] Summit Dashboard: ${dashboardData.stats.totalRegisteredParticipants} attendees, ${dashboardData.stats.totalSubmissionsRecorded} submissions (${timestampStr})`;
 
-    // 3. Commit the file via GitHub REST API (1 single clean commit!)
-    const commitMsg = `[Admin Sync] Summit Dashboard: ${dashboardData.stats.totalRegisteredParticipants} attendees, ${dashboardData.stats.totalSubmissionsRecorded} submissions (${new Date().toLocaleTimeString()})`;
+    // 3. Push JSON to dashboard/summit_dashboard.json
+    const jsonPush = await pushSingleFileToGitHub(
+      repo,
+      'dashboard/summit_dashboard.json',
+      jsonContent,
+      token,
+      commitMsg
+    );
 
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: commitMsg,
-        content: toBase64Utf8(jsonContent),
-        sha: existingSha,
-      }),
-    });
-
-    if (putRes.ok) {
-      const result = await putRes.json();
-      return {
-        success: true,
-        message: `Successfully generated dashboard JSON and pushed to ${repo} (${filePath})!`,
-        data: dashboardData,
-        commitUrl: result?.commit?.html_url || `https://github.com/${repo}/tree/main/${filePath}`,
-      };
-    } else {
-      const errData = await putRes.json().catch(() => ({}));
+    if (!jsonPush.success) {
       return {
         success: false,
-        message: `GitHub API error (${putRes.status}): ${errData.message || 'Commit failed'}`,
+        message: `Failed to push JSON to GitHub: ${jsonPush.error}`,
       };
     }
+
+    // 4. Push HTML to dashboard/index.html
+    const htmlPush = await pushSingleFileToGitHub(
+      repo,
+      'dashboard/index.html',
+      htmlContent,
+      token,
+      commitMsg
+    );
+
+    // 5. Also push HTML to root index.html so GitHub Pages / root URL serves it directly!
+    await pushSingleFileToGitHub(
+      repo,
+      'index.html',
+      htmlContent,
+      token,
+      commitMsg
+    );
+
+    const owner = repo.split('/')[0];
+    const repoName = repo.split('/')[1];
+    const pagesUrl = `https://${owner}.github.io/${repoName}/`;
+
+    return {
+      success: true,
+      message: `Successfully generated Dashboard JSON & HTML and pushed to ${repo}!`,
+      data: dashboardData,
+      commitUrl: jsonPush.url,
+      htmlUrl: htmlPush.url,
+      pagesUrl,
+      htmlContent,
+    };
   } catch (err: any) {
     return {
       success: false,

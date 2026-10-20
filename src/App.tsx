@@ -519,26 +519,6 @@ export default function App() {
           />
         )}
 
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.75rem', marginBottom: '0.5rem' }}>
-          <button
-            type="button"
-            onClick={() => setIsAdminModalOpen(true)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#64748b',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              textDecoration: 'underline',
-              padding: '0.25rem 0.5rem',
-            }}
-          >
-            🔒 Organizer Login & Dashboard Sync
-          </button>
-        </div>
 
         {testMode && (
           <div className="ts-test-mode" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>

@@ -22,6 +22,8 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
   const [statusMessage, setStatusMessage] = useState('');
   const [dashboardData, setDashboardData] = useState<DashboardSummary | null>(null);
   const [commitUrl, setCommitUrl] = useState<string | null>(null);
+  const [pagesUrl, setPagesUrl] = useState<string | null>(null);
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -31,7 +33,7 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
       setIsLoggedIn(true);
       setLoginError('');
     } else {
-      setLoginError('Invalid admin username or password.');
+      setLoginError('Invalid organizer username or password. Please verify your credentials.');
     }
   };
 
@@ -41,12 +43,15 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
     setSyncStatus('idle');
     setStatusMessage('');
     setDashboardData(null);
+    setCommitUrl(null);
+    setPagesUrl(null);
+    setHtmlContent(null);
   };
 
   const handleSync = async () => {
     setIsSyncing(true);
     setSyncStatus('idle');
-    setStatusMessage('Querying Firebase Firestore & generating Dashboard JSON...');
+    setStatusMessage('Querying Firebase Firestore, compiling analytics JSON & generating live HTML Dashboard...');
 
     try {
       const res = await syncDashboardToGitHub();
@@ -55,6 +60,8 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
         setStatusMessage(res.message);
         setDashboardData(res.data || null);
         setCommitUrl(res.commitUrl || null);
+        setPagesUrl(res.pagesUrl || null);
+        setHtmlContent(res.htmlContent || null);
       } else {
         setSyncStatus('error');
         setStatusMessage(res.message);
@@ -67,7 +74,7 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
     }
   };
 
-  const handleDownloadLocal = () => {
+  const handleDownloadJson = () => {
     if (!dashboardData) return;
     const blob = new Blob([JSON.stringify(dashboardData, null, 2)], {
       type: 'application/json',
@@ -80,253 +87,178 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadHtml = () => {
+    if (!htmlContent) return;
+    const blob = new Blob([htmlContent], {
+      type: 'text/html;charset=utf-8;',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `summit_dashboard_${Date.now()}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="ts-qr-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
-      <div
-        className="ts-qr-modal-content"
-        style={{
-          maxWidth: '560px',
-          textAlign: 'left',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.4rem' }}>📊</span>
+    <div className="ts-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="ts-modal-card" onClick={(e) => e.stopPropagation()}>
+        {/* Modal Top Header */}
+        <div className="ts-modal-header">
+          <div className="ts-modal-header__brand">
+            <div className="ts-modal-header__icon-badge" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
             <div>
-              <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--ts-text-primary, #fff)' }}>
-                Organizer Dashboard Sync
-              </h2>
-              <div style={{ fontSize: '0.75rem', color: 'var(--ts-text-muted, #94a3b8)' }}>
-                Aggregate Firebase Results $\rightarrow$ Push to TECH_SUMMIT_RESULT
-              </div>
+              <div className="ts-modal-eyebrow">ORGANIZER ADMIN PORTAL</div>
+              <h2 className="ts-modal-title">Summit Dashboard & HTML Sync</h2>
             </div>
           </div>
           <button
+            type="button"
+            className="ts-modal-close-btn"
             onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--ts-text-muted, #94a3b8)',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              lineHeight: 1,
-            }}
+            aria-label="Close dialog"
           >
             ✕
           </button>
         </div>
 
-        {/* View 1: Login Form */}
+        {/* View 1: Organizer Authentication Form */}
         {!isLoggedIn ? (
-          <div>
-            <p
-              style={{
-                fontSize: '0.85rem',
-                color: 'var(--ts-text-muted, #94a3b8)',
-                marginBottom: '1rem',
-                lineHeight: 1.5,
-              }}
-            >
-              Please enter organizer credentials to generate the summit dashboard JSON and push results to GitHub.
+          <div className="ts-modal-body">
+            <p className="ts-modal-desc">
+              Sign in with summit organizer credentials to aggregate attendee scores, compile the analytics JSON, and push the live interactive Dashboard HTML directly to GitHub.
             </p>
 
-            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.75rem',
-                    color: 'var(--ts-text-muted, #94a3b8)',
-                    marginBottom: '0.3rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  Username
+            <form onSubmit={handleLogin} className="ts-modal-form">
+              <div className="ts-field">
+                <label className="ts-field__label">
+                  Admin Username
                 </label>
-                <input
-                  type="text"
-                  className="ts-field__input"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin"
-                  required
-                />
+                <div className="ts-input-with-icon">
+                  <span className="ts-input-icon" aria-hidden="true">👤</span>
+                  <input
+                    type="text"
+                    className="ts-field__input"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="admin"
+                    autoComplete="username"
+                    required
+                  />
+                </div>
               </div>
 
-              <div>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.75rem',
-                    color: 'var(--ts-text-muted, #94a3b8)',
-                    marginBottom: '0.3rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  Password
+              <div className="ts-field">
+                <label className="ts-field__label">
+                  Admin Password
                 </label>
-                <input
-                  type="password"
-                  className="ts-field__input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter admin password"
-                  required
-                />
-                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.3rem' }}>
-                  Default summit password: <code>Summit2026!</code>
+                <div className="ts-input-with-icon">
+                  <span className="ts-input-icon" aria-hidden="true">🔑</span>
+                  <input
+                    type="password"
+                    className="ts-field__input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter organizer password"
+                    autoComplete="current-password"
+                    autoFocus
+                    required
+                  />
+                </div>
+                <div className="ts-modal-hint-pill">
+                  <span>💡 Summit organizer key: <strong>Summit2026!</strong></span>
                 </div>
               </div>
 
               {loginError && (
-                <div
-                  style={{
-                    padding: '0.6rem 0.8rem',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid #ef4444',
-                    borderRadius: '6px',
-                    color: '#f87171',
-                    fontSize: '0.825rem',
-                  }}
-                >
-                  ✕ {loginError}
+                <div className="ts-modal-alert ts-modal-alert--error">
+                  <span className="ts-alert-icon">⚠️</span>
+                  <span>{loginError}</span>
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <Button variant="ghost" onClick={onClose}>
+              <div className="ts-modal-actions">
+                <Button variant="ghost" type="button" onClick={onClose}>
                   Cancel
                 </Button>
                 <Button variant="primary" type="submit">
-                  Log In as Organizer
+                  Unlock Admin Portal 🔐
                 </Button>
               </div>
             </form>
           </div>
         ) : (
-          /* View 2: Sync Dashboard View */
-          <div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.6rem 0.8rem',
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                borderRadius: '8px',
-                marginBottom: '1rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.825rem', color: '#10b981' }}>
-                <span>✓</span> Authenticated as <strong>{username}</strong>
+          /* View 2: Sync Control Dashboard */
+          <div className="ts-modal-body">
+            {/* Authenticated Strip */}
+            <div className="ts-modal-auth-strip">
+              <div className="ts-modal-auth-user">
+                <span className="ts-live-pulse-dot" aria-hidden="true" />
+                <span>Authenticated as <strong>{username}</strong> (Summit Admin)</span>
               </div>
               <button
+                type="button"
+                className="ts-modal-logout-btn"
                 onClick={handleLogout}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  fontSize: '0.75rem',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                }}
               >
-                Log Out
+                Sign Out
               </button>
             </div>
 
-            <div
-              style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                padding: '0.85rem 1rem',
-                borderRadius: '8px',
-                marginBottom: '1rem',
-                fontSize: '0.825rem',
-              }}
-            >
-              <div style={{ color: 'var(--ts-text-muted, #94a3b8)', marginBottom: '0.4rem' }}>
-                <strong>Destination GitHub Repo:</strong>{' '}
-                <span style={{ color: '#38bdf8' }}>krishnakumarsabbu-prog/TECH_SUMMIT_RESULT</span>
+            {/* Target Destination Card */}
+            <div className="ts-sync-destination-card">
+              <div className="ts-sync-dest-row">
+                <span className="ts-sync-dest-label">GitHub Result Repo:</span>
+                <span className="ts-sync-dest-value ts-sync-dest-repo">krishnakumarsabbu-prog/TECH_SUMMIT_RESULT</span>
               </div>
-              <div style={{ color: 'var(--ts-text-muted, #94a3b8)', marginBottom: '0.6rem' }}>
-                <strong>Target File:</strong>{' '}
-                <span style={{ color: '#a78bfa' }}>dashboard/summit_dashboard.json</span>
+              <div className="ts-sync-dest-row">
+                <span className="ts-sync-dest-label">Data JSON:</span>
+                <span className="ts-sync-dest-value ts-sync-dest-path">dashboard/summit_dashboard.json</span>
+              </div>
+              <div className="ts-sync-dest-row">
+                <span className="ts-sync-dest-label">Interactive Dashboard:</span>
+                <span className="ts-sync-dest-value ts-sync-dest-repo">dashboard/index.html & index.html</span>
               </div>
 
-              <div style={{ fontSize: '0.78rem', color: '#94a3b8', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.6rem' }}>
-                This will automatically compile:
-                <ul style={{ margin: '0.3rem 0 0 1.2rem', padding: 0 }}>
-                  <li>Global attendance, submission & accuracy metrics</li>
-                  <li>All 9 Booth breakdown statistics (Attempts, Avg Scores, Times)</li>
-                  <li>Line of Business (LOB) participation breakdown</li>
-                  <li>Live Leaderboard ranking (Top performers)</li>
-                  <li>Prize-eligible winners list (completed $\ge$ 4 booths)</li>
-                </ul>
+              <div className="ts-sync-dest-summary">
+                <span className="ts-sync-summary-title">Features Generated in Sync:</span>
+                <div className="ts-sync-chips">
+                  <span className="ts-chip">👥 Attendee Register</span>
+                  <span className="ts-chip">🏆 Prize Winners Filter</span>
+                  <span className="ts-chip">🎪 9 Booths Analytics</span>
+                  <span className="ts-chip">🏢 LOB Breakdown</span>
+                  <span className="ts-chip">📥 CSV One-Click Export</span>
+                </div>
               </div>
             </div>
 
-            {/* Status Message */}
+            {/* Sync Status Banner */}
             {syncStatus !== 'idle' && (
-              <div
-                style={{
-                  padding: '0.85rem 1rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  marginBottom: '1rem',
-                  background:
-                    syncStatus === 'success'
-                      ? 'rgba(34, 197, 94, 0.1)'
-                      : 'rgba(239, 68, 68, 0.1)',
-                  border: `1px solid ${
-                    syncStatus === 'success' ? '#22c55e' : '#ef4444'
-                  }`,
-                  color: syncStatus === 'success' ? '#86efac' : '#fca5a5',
-                }}
-              >
-                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>
-                  {syncStatus === 'success' ? '✓ Push Successful!' : '✕ Sync Failed'}
+              <div className={`ts-modal-alert ts-modal-alert--${syncStatus}`}>
+                <div className="ts-modal-alert-header">
+                  <span className="ts-alert-icon">{syncStatus === 'success' ? '✓' : '✕'}</span>
+                  <strong>{syncStatus === 'success' ? 'Push to GitHub Succeeded!' : 'Sync Issue Encountered'}</strong>
                 </div>
-                <div>{statusMessage}</div>
+                <div className="ts-modal-alert-msg">{statusMessage}</div>
 
                 {dashboardData && (
-                  <div
-                    style={{
-                      marginTop: '0.6rem',
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr 1fr',
-                      gap: '0.5rem',
-                      background: 'rgba(0,0,0,0.25)',
-                      padding: '0.6rem',
-                      borderRadius: '6px',
-                      fontSize: '0.78rem',
-                      color: '#fff',
-                    }}
-                  >
-                    <div>
-                      <span style={{ color: '#94a3b8' }}>Attendees:</span>{' '}
-                      <strong>{dashboardData.stats.totalRegisteredParticipants}</strong>
+                  <div className="ts-sync-stats-grid">
+                    <div className="ts-sync-stat-item">
+                      <span className="ts-sync-stat-label">Total Attendees</span>
+                      <strong className="ts-sync-stat-num">{dashboardData.stats.totalRegisteredParticipants}</strong>
                     </div>
-                    <div>
-                      <span style={{ color: '#94a3b8' }}>Submissions:</span>{' '}
-                      <strong>{dashboardData.stats.totalSubmissionsRecorded}</strong>
+                    <div className="ts-sync-stat-item">
+                      <span className="ts-sync-stat-label">Submissions</span>
+                      <strong className="ts-sync-stat-num">{dashboardData.stats.totalSubmissionsRecorded}</strong>
                     </div>
-                    <div>
-                      <span style={{ color: '#94a3b8' }}>Prize Eligible:</span>{' '}
-                      <strong>{dashboardData.stats.totalPrizeEligibleAttendees}</strong>
+                    <div className="ts-sync-stat-item">
+                      <span className="ts-sync-stat-label">Prize Eligible</span>
+                      <strong className="ts-sync-stat-num">{dashboardData.stats.totalPrizeEligibleAttendees}</strong>
                     </div>
                   </div>
                 )}
@@ -334,29 +266,34 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
             )}
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <div className="ts-modal-actions">
               {dashboardData && (
-                <Button variant="ghost" onClick={handleDownloadLocal}>
+                <Button variant="ghost" onClick={handleDownloadJson}>
                   💾 Download JSON
                 </Button>
+              )}
+              {htmlContent && (
+                <Button variant="ghost" onClick={handleDownloadHtml}>
+                  🌐 Download HTML Dashboard
+                </Button>
+              )}
+              {pagesUrl && (
+                <a
+                  href={pagesUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ts-view-github-link"
+                  style={{ background: 'rgba(38, 158, 155, 0.15)', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary-dark)' }}
+                >
+                  📊 Open Live Dashboard ↗
+                </a>
               )}
               {commitUrl && (
                 <a
                   href={commitUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    padding: '0.55rem 0.85rem',
-                    background: 'rgba(56, 189, 248, 0.15)',
-                    border: '1px solid #38bdf8',
-                    borderRadius: '8px',
-                    color: '#38bdf8',
-                    textDecoration: 'none',
-                    fontSize: '0.85rem',
-                    fontWeight: 500,
-                  }}
+                  className="ts-view-github-link"
                 >
                   ↗ View on GitHub
                 </a>
@@ -366,7 +303,7 @@ export const AdminSyncModal: React.FC<AdminSyncModalProps> = ({ isOpen, onClose 
                 onClick={handleSync}
                 disabled={isSyncing}
               >
-                {isSyncing ? 'Compiling & Pushing...' : '⚡ SYNC DASHBOARD TO GITHUB'}
+                {isSyncing ? '⚡ Compiling & Pushing...' : '⚡ SYNC TO GITHUB REPO'}
               </Button>
             </div>
           </div>
