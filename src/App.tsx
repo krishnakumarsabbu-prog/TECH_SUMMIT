@@ -11,7 +11,6 @@ import { AlreadyPlayed } from './pages/AlreadyPlayed';
 import { Passport } from './pages/Passport';
 import { Button } from './components/Button';
 import { FirebaseStatusModal } from './components/FirebaseStatusModal';
-import { AdminSyncModal } from './components/AdminSyncModal';
 import { prepareQuestions } from './utils/quiz';
 import { submitResult, registerParticipant } from './services/submissionService';
 import {
@@ -52,7 +51,6 @@ export default function App() {
   const [testMode, setTestMode] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isFirebaseModalOpen, setIsFirebaseModalOpen] = useState(false);
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
   // Initialize and route based on URL and stored state
   useEffect(() => {
@@ -433,7 +431,6 @@ export default function App() {
         onOpenPassport={participant ? handleOpenPassport : undefined}
         isPassportActive={stage === 'PASSPORT'}
         onGoHome={() => setStage('WELCOME')}
-        onOpenAdmin={() => setIsAdminModalOpen(true)}
       />
       <Layout>
         {loadError && (
@@ -528,9 +525,6 @@ export default function App() {
             <Button variant="ghost" onClick={() => setIsFirebaseModalOpen(true)}>
               🔥 FIREBASE STATUS
             </Button>
-            <Button variant="ghost" onClick={() => setIsAdminModalOpen(true)}>
-              📊 ADMIN SYNC
-            </Button>
           </div>
         )}
 
@@ -538,11 +532,6 @@ export default function App() {
           isOpen={isFirebaseModalOpen}
           onClose={() => setIsFirebaseModalOpen(false)}
           currentEntId={participant?.entId}
-        />
-
-        <AdminSyncModal
-          isOpen={isAdminModalOpen}
-          onClose={() => setIsAdminModalOpen(false)}
         />
       </Layout>
     </>
