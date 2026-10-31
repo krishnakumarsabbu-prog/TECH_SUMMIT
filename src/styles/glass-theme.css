@@ -1,0 +1,2816 @@
+/**
+ * Liquid Glass – Dark Theme
+ * Precise implementation of Liquid Glass – Dark design mockups.
+ * Mobile-first (360px - 430px) with centered 720px max-width on >=768px.
+ */
+
+/* =========================================================
+   1. DESIGN TOKENS
+   ========================================================= */
+:root {
+  --bg: linear-gradient(160deg, #0B1020 0%, #141B3F 55%, #1B1146 100%);
+  --ink: #FFFFFF;
+  --ink2: #C7CFEE;
+  --gold: #FFC27A;
+  --ga: rgba(255, 255, 255, 0.17);
+  --gb: rgba(255, 255, 255, 0.05);
+  --bd: rgba(255, 255, 255, 0.28);
+  --sh: rgba(0, 0, 0, 0.45);
+  --b1: #5B6CFF;
+  --b2: #FF4D9D;
+  --b3: #22D3C5;
+  --nav: rgba(24, 30, 66, 0.72);
+  --ok: #B8FFE9;
+  --okbg: rgba(60, 220, 180, 0.28);
+  --okbd: rgba(120, 255, 220, 0.7);
+  --trk: rgba(255, 255, 255, 0.18);
+  --accent-a: #FF9A4D;
+  --accent-b: #FF4081;
+  --gutter: 16px;
+  --r-card: 24px;
+  --r-inner: 18px;
+  --r-pill: 999px;
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Aliases for components and compatibility */
+  --brand-primary: var(--accent-b);
+  --border: var(--bd);
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink2);
+  --surface: var(--ga);
+  --error: #FF5E7E;
+  --error-bg: rgba(255, 77, 100, 0.25);
+  --error-bd: rgba(255, 120, 140, 0.7);
+}
+
+/* =========================================================
+   2. BASE & RESET
+   ========================================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  background-attachment: fixed;
+  min-height: 100dvh;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-b);
+  outline-offset: 2px;
+}
+
+button, .ts-btn, .ts-hero-primary-btn, .ts-showcase-booth-card, .ts-booth-card, .ts-mobile-nav__item, .ts-option {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 3 Decorative background glow blobs */
+.ts-bg-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ts-blob {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(75px);
+  will-change: transform;
+}
+
+.ts-blob--top-right {
+  top: -40px;
+  right: -50px;
+  background: var(--b1);
+  opacity: 0.85;
+}
+
+.ts-blob--mid-left {
+  top: 35%;
+  left: -80px;
+  background: var(--b2);
+  opacity: 0.7;
+}
+
+.ts-blob--bottom-right {
+  bottom: 40px;
+  right: -50px;
+  background: var(--b3);
+  opacity: 0.7;
+}
+
+/* =========================================================
+   3. GLASS SURFACES
+   ========================================================= */
+.glass,
+.ts-glass,
+.ts-event-banner,
+.ts-hero-card,
+.ts-info-card,
+.ts-showcase-booth-card,
+.ts-qualification-banner,
+.ts-passport-stats-grid,
+.ts-booth-card,
+.ts-question-card,
+.ts-score-card,
+.ts-milestone-card,
+.ts-already-summary,
+.ts-modal-card,
+.ts-scanner-modal,
+.ts-participant-card,
+.ts-topic-card,
+.ts-topics-header,
+.ts-topics-rotation-banner,
+.ts-sync-destination-card {
+  background: linear-gradient(135deg, var(--ga), var(--gb));
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-card);
+  box-shadow: inset 0 1.5px 0 var(--bd), 0 10px 28px var(--sh);
+  box-sizing: border-box;
+}
+
+/* Performance: repeated booth cards use blur(10px) only */
+.ts-showcase-booth-card,
+.ts-booth-card {
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  backdrop-filter: blur(10px) saturate(180%);
+}
+
+/* Fallbacks for no backdrop-filter and reduced transparency */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass, .ts-glass, .ts-event-banner, .ts-hero-card, .ts-info-card,
+  .ts-showcase-booth-card, .ts-qualification-banner, .ts-passport-stats-grid,
+  .ts-booth-card, .ts-question-card, .ts-score-card, .ts-milestone-card,
+  .ts-already-summary, .ts-modal-card, .ts-scanner-modal, .ts-participant-card,
+  .ts-topic-card, .ts-topics-header, .ts-topics-rotation-banner, .ts-mobile-nav,
+  .ts-hero-scanned-card {
+    background: rgba(30, 38, 80, 0.92);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .ts-glass, .ts-event-banner, .ts-hero-card, .ts-info-card,
+  .ts-showcase-booth-card, .ts-qualification-banner, .ts-passport-stats-grid,
+  .ts-booth-card, .ts-question-card, .ts-score-card, .ts-milestone-card,
+  .ts-already-summary, .ts-modal-card, .ts-scanner-modal, .ts-participant-card,
+  .ts-topic-card, .ts-topics-header, .ts-topics-rotation-banner, .ts-mobile-nav,
+  .ts-hero-scanned-card {
+    background: rgba(30, 38, 80, 0.92);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* =========================================================
+   4. SINGLE GUTTER RULE & LAYOUT
+   ========================================================= */
+.ts-layout {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ts-layout__main {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.ts-page {
+  width: 100%;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-top: calc(54px + env(safe-area-inset-top));
+  padding-bottom: calc(116px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.ts-page--welcome {
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.ts-page__container {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.ts-page--passport .ts-page__container {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* =========================================================
+   5. TYPOGRAPHY UTILITIES
+   ========================================================= */
+.ts-gradient-text {
+  background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline;
+}
+
+.ts-page__title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.ts-page__title--sm {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.ts-page__description {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2);
+  margin: 0 0 16px 0;
+}
+
+/* =========================================================
+   6. HEADER BAR (on quiz / result screens)
+   ========================================================= */
+.ts-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 8px max(16px, env(safe-area-inset-left));
+  margin-bottom: 8px;
+}
+
+.ts-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.ts-header__badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  background: var(--ga);
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--bd);
+}
+
+.ts-header__passport-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 8px var(--sh);
+}
+
+.ts-header__passport-btn--winner {
+  border-color: var(--okbd);
+  color: var(--ok);
+}
+
+.ts-header__passport-text--compact {
+  display: none;
+}
+
+@media (max-width: 400px) {
+  .ts-header__passport-text--full {
+    display: none;
+  }
+  .ts-header__passport-text--compact {
+    display: inline;
+  }
+}
+
+/* =========================================================
+   7. HOME SCREEN: BANNER, HERO, INFO, BOOTHS
+   ========================================================= */
+
+/* 1. Event Banner */
+.ts-event-banner {
+  padding: 12px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.ts-event-banner__image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+}
+
+/* 2. Hero Card */
+.ts-hero-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ts-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.ts-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ts-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.ts-hero-eyebrow__icon {
+  color: var(--gold);
+}
+
+.ts-hero-title {
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  max-width: 100%;
+}
+
+.ts-hero-description {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2);
+  margin: 0;
+}
+
+/* Remove decorative mesh and SVG from mobile hero */
+@media (max-width: 767px) {
+  .ts-hero-art,
+  .ts-hero-card__orb,
+  .ts-hero-card__glow-mesh {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .ts-hero-art {
+    display: none;
+  }
+}
+
+/* Scanned-booth card inside hero */
+.ts-hero-scanned-card {
+  background: linear-gradient(135deg, var(--ga), var(--gb));
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-inner);
+  box-shadow: inset 0 1.5px 0 var(--bd), 0 8px 20px var(--sh);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.ts-hero-scanned-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 154, 77, 0.35), rgba(255, 64, 129, 0.25));
+  border: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF4081;
+  flex-shrink: 0;
+}
+
+.ts-hero-scanned-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ts-hero-scanned-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.ts-hero-scanned-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* Hero CTA group */
+.ts-hero-cta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.ts-hero-primary-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.6), 0 8px 20px rgba(255, 64, 129, 0.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 180ms ease;
+  font-family: var(--font);
+}
+
+.ts-hero-primary-btn:active {
+  transform: scale(0.98);
+}
+
+.ts-hero-passport-link,
+.ts-hero-rules-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font);
+  padding: 0;
+}
+
+/* 3. Info Cards */
+.ts-info-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.ts-info-card {
+  padding: 16px 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ts-info-card__value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.ts-info-card__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--ink2);
+  text-transform: uppercase;
+}
+
+/* 4. Section Header */
+.ts-showcase-section {
+  margin-bottom: 14px;
+}
+
+.ts-showcase-section__heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ts-showcase-section__title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.ts-showcase-view-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 5px 14px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 0 2px 8px var(--sh);
+}
+
+/* Booths List (Mobile single column) */
+.ts-showcase-booths-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .ts-showcase-booths-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ts-showcase-booths-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ts-showcase-booth-card {
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--r-card);
+  cursor: pointer;
+  position: relative;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.ts-showcase-booth-card:active {
+  transform: scale(0.98);
+}
+
+.ts-showcase-booth-card--active {
+  border-color: var(--okbd);
+  box-shadow: inset 0 1.5px 0 var(--bd), 0 0 16px rgba(120, 255, 220, 0.3);
+}
+
+.ts-showcase-booth-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 154, 77, 0.35), rgba(255, 64, 129, 0.25));
+  border: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF4081;
+  flex-shrink: 0;
+}
+
+.ts-showcase-booth-card__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ts-showcase-booth-card__num {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ts-showcase-booth-card__title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ts-showcase-booth-card__desc {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .ts-showcase-booth-card__desc {
+    display: block;
+    font-size: 13px;
+    color: var(--ink2);
+    line-height: 1.4;
+    margin: 4px 0 0 0;
+  }
+}
+
+.ts-booth-scanned-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ok);
+  background: var(--okbg);
+  border: 1px solid var(--okbd);
+  border-radius: var(--r-pill);
+  padding: 3px 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ts-showcase-booth-card__arrow {
+  color: var(--ink2);
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Bottom welcome actions & footer */
+.ts-welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 599px) {
+  .ts-welcome-actions {
+    display: none;
+  }
+}
+
+.ts-page__footer {
+  font-size: 12px;
+  color: var(--ink2);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   8. PASSPORT SCREEN
+   ========================================================= */
+
+/* Profile Header Row */
+.ts-passport-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ts-passport-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ga), var(--gb));
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--bd);
+  box-shadow: inset 0 1.5px 0 var(--bd), 0 8px 20px var(--sh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.ts-passport-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ts-passport-badge-tag {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+  display: block;
+}
+
+.ts-passport-user-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 2px 0;
+  line-height: 1.15;
+}
+
+.ts-passport-user-email {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.ts-passport-edit-btn {
+  margin-left: auto;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--sh);
+  font-family: var(--font);
+}
+
+/* Challenge Progress Card */
+.ts-qualification-banner {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ts-qualification-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ts-qualification-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.ts-qualification-pill {
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ts-qualification-desc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2);
+  margin: 0;
+}
+
+.ts-passport-progress-bar-wrap {
+  width: 100%;
+}
+
+.ts-passport-progress-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--r-pill);
+  background: var(--trk);
+  overflow: hidden;
+}
+
+.ts-passport-progress-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+  transition: width 400ms ease;
+}
+
+.ts-passport-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+  margin-top: 8px;
+}
+
+/* Stats: ONE .glass card with 2x2 grid & hairline dividers (no seams) */
+.ts-passport-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 18px;
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+
+.ts-stat-cell {
+  padding: 16px 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ts-stat-cell--tl {
+  border-right: 1px solid var(--bd);
+  border-bottom: 1px solid var(--bd);
+}
+
+.ts-stat-cell--tr {
+  border-bottom: 1px solid var(--bd);
+}
+
+.ts-stat-cell--bl {
+  border-right: 1px solid var(--bd);
+}
+
+.ts-stat-cell--br {
+  /* No divider on bottom-right cell */
+}
+
+.ts-stat-card__number {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.ts-stat-card__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ink2);
+  text-transform: uppercase;
+}
+
+/* Booth Status Section */
+.ts-booths-matrix-section {
+  margin-bottom: 14px;
+}
+
+.ts-matrix-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ts-matrix-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.ts-matrix-subtitle {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2);
+  display: block;
+}
+
+.ts-passport-scan-qr-btn {
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 9px 14px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--sh);
+  font-family: var(--font);
+}
+
+/* Passport Booth Rows */
+.ts-booths-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ts-booth-card {
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--r-card);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  position: relative;
+}
+
+.ts-booth-card[role="button"] {
+  cursor: pointer;
+}
+
+.ts-booth-card[role="button"]:active {
+  transform: scale(0.98);
+}
+
+.ts-booth-card--completed {
+  border-color: var(--okbd);
+  box-shadow: inset 0 1.5px 0 var(--bd), 0 0 16px rgba(120, 255, 220, 0.22);
+}
+
+.ts-booth-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 154, 77, 0.35), rgba(255, 64, 129, 0.25));
+  border: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF4081;
+  flex-shrink: 0;
+}
+
+.ts-booth-card__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ts-booth-card__header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.ts-booth-card__number {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ts-booth-card__status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--r-pill);
+  padding: 3px 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ts-pill-done {
+  background: var(--okbg);
+  border: 1px solid var(--okbd);
+  color: var(--ok);
+}
+
+.ts-pill-todo {
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  color: var(--ink2);
+}
+
+.ts-booth-card__title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.ts-booth-card__stats-line {
+  font-size: 12px;
+  color: var(--ink2);
+  margin-top: 2px;
+}
+
+.ts-booth-card__desc {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .ts-booth-card__desc {
+    display: block;
+    font-size: 13px;
+    color: var(--ink2);
+    line-height: 1.4;
+    margin: 4px 0 0 0;
+  }
+}
+
+.ts-passport-actions {
+  margin-top: 16px;
+}
+
+/* =========================================================
+   9. FLOATING NAV (.ts-mobile-nav)
+   ========================================================= */
+.ts-mobile-nav {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  height: 68px;
+  border-radius: var(--r-pill);
+  background: var(--nav);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--bd);
+  box-shadow: inset 0 1.5px 0 var(--bd), 0 10px 28px var(--sh);
+  z-index: 50;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 6px;
+  max-width: calc(720px - 32px);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.ts-mobile-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--ink2);
+  width: 64px;
+  min-height: 44px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 180ms ease, transform 180ms ease;
+  font-family: var(--font);
+}
+
+.ts-mobile-nav__item:active {
+  transform: scale(0.92);
+}
+
+.ts-mobile-nav__item--active {
+  color: var(--accent-b);
+}
+
+.ts-mobile-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ts-mobile-nav__item small {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 3px;
+  color: inherit;
+}
+
+/* Middle raised Passport button */
+.ts-mobile-nav__item--passport {
+  position: relative;
+  width: 56px;
+  padding: 0;
+}
+
+.ts-mobile-nav__passport-bubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+  border: 2px solid #FFFFFF;
+  margin-top: -30px;
+  box-shadow: 0 8px 18px rgba(255, 64, 129, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  transition: transform 180ms ease;
+}
+
+.ts-mobile-nav__item--passport:active .ts-mobile-nav__passport-bubble {
+  transform: scale(0.92);
+}
+
+/* =========================================================
+   10. BUTTONS & UI CONTROLS
+   ========================================================= */
+.ts-btn {
+  height: 48px;
+  padding: 0 20px;
+  border-radius: var(--r-pill);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  border: none;
+  text-decoration: none;
+}
+
+.ts-btn:active {
+  transform: scale(0.98);
+}
+
+.ts-btn--primary {
+  background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.6), 0 8px 20px rgba(255, 64, 129, 0.35);
+}
+
+.ts-btn--secondary {
+  background: var(--ga);
+  color: var(--ink);
+  border: 1px solid var(--bd);
+  box-shadow: 0 4px 14px var(--sh);
+}
+
+.ts-btn--ghost {
+  background: transparent;
+  color: var(--ink2);
+  border: 1px solid var(--bd);
+}
+
+.ts-btn--full {
+  width: 100%;
+}
+
+.ts-btn--disabled, .ts-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =========================================================
+   11. QUIZ QUESTION SCREEN & TIMER
+   ========================================================= */
+.ts-quiz-booth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ts-quiz-booth-pill {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ts-quiz-count-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink2);
+}
+
+.ts-quiz-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* Progress bar inside Quiz */
+.ts-progress-bar {
+  flex: 1;
+  height: 10px;
+  border-radius: var(--r-pill);
+  background: var(--trk);
+  overflow: hidden;
+}
+
+.ts-progress-bar__fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+  transition: width 300ms ease;
+}
+
+/* Timer */
+.ts-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ts-timer__icon-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.ts-timer__content {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.ts-timer__value {
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-timer__unit {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink2);
+}
+
+.ts-timer--warning {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.ts-timer--danger {
+  border-color: #FF4081;
+  color: #FF4081;
+}
+
+/* Question Card */
+.ts-question-card {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.ts-question-card__category {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ts-question-card__text {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 0 0 16px 0;
+}
+
+.ts-question-card__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ts-option {
+  width: 100%;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--ga), var(--gb));
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-inner);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.35;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  box-sizing: border-box;
+}
+
+.ts-option:active {
+  transform: scale(0.98);
+}
+
+.ts-option--selected {
+  border: 2px solid var(--accent-b) !important;
+  box-shadow: 0 0 16px rgba(255, 64, 129, 0.35);
+}
+
+.ts-option--correct {
+  border: 2px solid var(--okbd) !important;
+  background: var(--okbg) !important;
+  color: var(--ok) !important;
+}
+
+.ts-option--incorrect {
+  border: 2px solid var(--error-bd) !important;
+  background: var(--error-bg) !important;
+  color: #FFAEC0 !important;
+}
+
+.ts-option__letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.ts-option__text {
+  flex: 1;
+}
+
+.ts-option__radio-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--accent-b);
+}
+
+.ts-option__radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--bd);
+}
+
+.ts-quiz-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ts-quiz-actions .ts-btn {
+  flex: 1;
+}
+
+/* =========================================================
+   12. RESULTS & ALREADY PLAYED SCREENS
+   ========================================================= */
+.ts-results-booth-pill,
+.ts-restriction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+.ts-already-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  margin: 0 auto 16px auto;
+}
+
+.ts-score-card,
+.ts-already-summary {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.ts-score-card__headline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ts-score-card__score {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.ts-score-card__percentage {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.ts-score-card__time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--ink2);
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--bd);
+}
+
+.ts-score-card__time-label {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ts-score-card__breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ts-score-card__row,
+.ts-already-summary__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.ts-score-card__value,
+.ts-already-summary__value {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.ts-score-card__value--correct,
+.ts-result-value--correct {
+  color: var(--ok);
+}
+
+.ts-score-card__value--incorrect,
+.ts-result-value--incorrect {
+  color: #FFAEC0;
+}
+
+.ts-score-card__message {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 6px 0;
+}
+
+.ts-score-card__disclaimer {
+  font-size: 11px;
+  color: var(--ink2);
+  margin: 0;
+}
+
+/* Milestone Card */
+.ts-milestone-card {
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ts-milestone-icon {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.ts-milestone-card--winner .ts-milestone-icon {
+  color: var(--ok);
+}
+
+.ts-milestone-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 4px 0;
+}
+
+.ts-milestone-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink2);
+  margin: 0;
+}
+
+.ts-results-actions {
+  margin-top: 16px;
+}
+
+/* =========================================================
+   13. TOPICS SELECTION & ROTATION
+   ========================================================= */
+.ts-topics-header {
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.ts-topics-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.ts-topics-rotation-banner {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ts-rotation-icon {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.ts-rotation-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  margin: 0 0 4px 0;
+}
+
+.ts-rotation-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink2);
+  margin: 0;
+}
+
+.ts-topics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ts-topic-card {
+  padding: 16px;
+  border-radius: var(--r-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ts-topic-card__header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.ts-topic-card__index {
+  color: var(--gold);
+  letter-spacing: 0.08em;
+}
+
+.ts-topic-card__count {
+  color: var(--ink2);
+}
+
+.ts-topic-card__title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 6px 0;
+}
+
+.ts-topic-card__desc {
+  font-size: 13px;
+  color: var(--ink2);
+  margin: 0;
+}
+
+/* =========================================================
+   14. REGISTRATION FORM (ParticipantDetails)
+   ========================================================= */
+.ts-page--participant .ts-page__container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.ts-participant-booth-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.ts-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ts-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ts-field__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+
+.ts-field__required {
+  color: var(--accent-b);
+}
+
+.ts-field__input {
+  height: 52px;
+  padding: 0 16px;
+  background: rgba(14, 22, 50, 0.65);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-inner);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+  box-sizing: border-box;
+}
+
+.ts-field__input:focus {
+  outline: none;
+  border-color: var(--accent-b);
+  box-shadow: 0 0 12px rgba(255, 64, 129, 0.3);
+}
+
+.ts-field__input--error {
+  border-color: var(--error-bd);
+}
+
+.ts-field__error {
+  font-size: 12px;
+  color: #FFAEC0;
+  margin-top: 4px;
+}
+
+.ts-form__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.ts-form__actions .ts-btn {
+  flex: 1;
+}
+
+/* =========================================================
+   15. MODALS & TOASTS
+   ========================================================= */
+.ts-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: rgba(8, 12, 28, 0.68);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.ts-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: min(85vh, 800px);
+  overflow-y: auto;
+  padding: 24px;
+  margin: auto;
+  box-sizing: border-box;
+}
+
+.ts-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ts-modal-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-modal-header__icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+}
+
+.ts-modal-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.ts-modal-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ga);
+  border: 1px solid var(--bd);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ts-modal-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+
+.ts-modal-content h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 16px 0 6px 0;
+}
+
+.ts-modal-content ul {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+
+.ts-modal-content li {
+  margin-bottom: 6px;
+}
+
+/* Scanner Modal */
+.ts-scanner-modal {
+  padding: 20px;
+  max-width: 480px;
+}
+
+.ts-scanner-viewport {
+  width: 100%;
+  border-radius: var(--r-inner);
+  overflow: hidden;
+  background: #000;
+  margin: 14px 0;
+}
+
+.ts-scanner-toast {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 16px;
+  right: 16px;
+  max-width: 500px;
+  margin: 0 auto;
+  z-index: 110;
+  padding: 12px 16px;
+  border-radius: var(--r-inner);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(30, 15, 30, 0.95);
+  border: 1px solid var(--accent-b);
+  color: #FFFFFF;
+  box-shadow: 0 8px 24px var(--sh);
+}
+
+/* =========================================================
+   16. MOTION & ANIMATIONS
+   ========================================================= */
+@media (prefers-reduced-motion: no-preference) {
+  .ts-page {
+    animation: ts-fade-in 260ms ease both;
+  }
+
+  .ts-hero-card {
+    animation: ts-fade-up 320ms 40ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .ts-info-cards {
+    animation: ts-fade-up 320ms 80ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .ts-showcase-section {
+    animation: ts-fade-up 320ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes ts-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes ts-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* =========================================================
+   17. LIGHT SUMMIT PASSPORT THEME
+   ========================================================= */
+:root {
+  --bg: linear-gradient(155deg, #dce7ff 0%, #eef0ff 34%, #fbd6ee 72%, #d2f4e9 100%);
+  --ink: #101a36;
+  --ink2: #4d5a7e;
+  --gold: #bf461a;
+  --ga: rgba(255, 255, 255, 0.58);
+  --gb: rgba(255, 255, 255, 0.28);
+  --bd: rgba(255, 255, 255, 0.82);
+  --sh: rgba(67, 78, 130, 0.14);
+  --b1: #93adff;
+  --b2: #f7a8d0;
+  --b3: #9de3d1;
+  --nav: rgba(255, 255, 255, 0.72);
+  --ok: #08796d;
+  --okbg: rgba(97, 220, 201, 0.3);
+  --okbd: rgba(38, 173, 160, 0.65);
+  --trk: rgba(77, 90, 126, 0.18);
+  --accent-a: #ff934c;
+  --accent-b: #ff3c7e;
+  --brand-primary: #ff3c7e;
+  --border: rgba(255, 255, 255, 0.82);
+  --text-primary: #101a36;
+  --text-secondary: #4d5a7e;
+  --surface: rgba(255, 255, 255, 0.58);
+  --error: #c63852;
+  --error-bg: rgba(255, 112, 137, 0.18);
+  --error-bd: rgba(198, 56, 82, 0.5);
+}
+
+html, body {
+  background:
+    radial-gradient(circle at 86% 4%, rgba(124, 154, 255, 0.54) 0, transparent 35%),
+    radial-gradient(circle at 8% 54%, rgba(255, 183, 220, 0.48) 0, transparent 40%),
+    radial-gradient(circle at 90% 88%, rgba(126, 220, 198, 0.5) 0, transparent 32%),
+    linear-gradient(155deg, #dce7ff 0%, #f1efff 45%, #f8d7ec 76%, #d2f4e9 100%);
+  color: var(--ink);
+}
+
+.ts-bg-blobs { opacity: .38; }
+.ts-blob { filter: blur(90px); }
+.ts-page { padding-top: max(24px, env(safe-area-inset-top)); }
+.ts-page--welcome { padding-top: max(16px, env(safe-area-inset-top)); }
+.ts-page__title, .ts-page__title--sm, .ts-hero-title, .ts-showcase-section__title,
+.ts-passport-user-name, .ts-qualification-title, .ts-matrix-title, .ts-topic-card__title,
+.ts-question-card__text, .ts-score-card__message, .ts-milestone-title, .ts-modal-title { color: var(--ink); }
+.ts-page__description, .ts-topic-card__desc, .ts-rotation-desc, .ts-milestone-desc,
+.ts-page__footer, .ts-matrix-subtitle, .ts-passport-user-email, .ts-quiz-count-pill,
+.ts-score-card__disclaimer, .ts-already-summary__row, .ts-modal-content { color: var(--ink2); }
+.ts-gradient-text { background: linear-gradient(90deg, #ff9249, #ff3c7e); }
+
+.glass, .ts-glass, .ts-event-banner, .ts-hero-card, .ts-info-card, .ts-showcase-booth-card,
+.ts-qualification-banner, .ts-passport-stats-grid, .ts-booth-card, .ts-question-card,
+.ts-score-card, .ts-milestone-card, .ts-already-summary, .ts-modal-card, .ts-scanner-modal,
+.ts-participant-card, .ts-topic-card, .ts-topics-header, .ts-topics-rotation-banner,
+.ts-sync-destination-card {
+  background: linear-gradient(135deg, rgba(255,255,255,.68), rgba(255,255,255,.34));
+  border-color: rgba(255,255,255,.9);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), 0 12px 30px var(--sh);
+}
+
+.ts-header { background: rgba(255,255,255,.68); border-bottom-color: rgba(255,255,255,.86); box-shadow: 0 4px 18px rgba(74,85,145,.1); }
+.ts-header__badge, .ts-header__passport-btn, .ts-passport-edit-btn, .ts-passport-scan-qr-btn,
+.ts-showcase-view-all, .ts-btn--secondary, .ts-mobile-nav__item, .ts-qualification-pill, .ts-timer { color: var(--ink); }
+.ts-header__badge { background: rgba(255,255,255,.4); }
+.ts-header__passport-btn, .ts-passport-edit-btn, .ts-passport-scan-qr-btn { background: rgba(255,255,255,.62); border-color: rgba(255,255,255,.95); box-shadow: 0 4px 12px rgba(80,90,140,.12); }
+.ts-header__passport-btn:hover, .ts-passport-edit-btn:hover, .ts-passport-scan-qr-btn:hover { background: rgba(255,255,255,.9); color: var(--ink); }
+
+.ts-hero-card { color: var(--ink); }
+.ts-hero-eyebrow, .ts-showcase-view-all, .ts-header__badge, .ts-qualification-pill, .ts-topic-card__index,
+.ts-topics-badge, .ts-quiz-booth-pill, .ts-results-booth-pill, .ts-restriction-badge { color: var(--gold); }
+.ts-hero-primary-btn, .ts-btn--primary { background: linear-gradient(135deg, #ff944d, #ff3e7e); color: #fff; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.72), 0 9px 22px rgba(255,70,124,.3); }
+.ts-hero-passport-link, .ts-hero-rules-link { color: #c44719; }
+.ts-hero-scanned-icon, .ts-showcase-booth-card__icon, .ts-booth-card__icon { background: linear-gradient(135deg, rgba(255,161,109,.34), rgba(255,91,143,.24)); border-color: rgba(255,255,255,.8); color: #ff3c7e; }
+.ts-info-card__value, .ts-stat-card__number, .ts-score-card__percentage { color: var(--ink); }
+.ts-info-card__label, .ts-stat-card__label { color: var(--ink2); }
+
+.ts-qualification-banner--progress, .ts-score-card, .ts-milestone-card--progress { background: linear-gradient(135deg, rgba(255,255,255,.66), rgba(238,233,255,.48)); border-color: rgba(255,255,255,.9); }
+
+/* TARGET REACHED: Celebratory green background */
+.ts-qualification-banner--winner, .ts-milestone-card--winner {
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.92) 0%, rgba(167, 243, 208, 0.8) 55%, rgba(110, 231, 183, 0.68) 100%) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.85) !important;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.95), 0 14px 36px rgba(16, 185, 129, 0.22) !important;
+}
+.ts-qualification-banner--winner .ts-qualification-title,
+.ts-milestone-card--winner .ts-milestone-title { color: #064e3b !important; }
+.ts-qualification-banner--winner .ts-qualification-desc,
+.ts-milestone-card--winner .ts-milestone-desc { color: #047857 !important; }
+.ts-qualification-banner--winner .ts-qualification-pill {
+  background: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(5, 150, 105, 0.5) !important;
+  color: #065f46 !important;
+  font-weight: 800 !important;
+}
+.ts-milestone-card--winner .ts-milestone-icon {
+  color: #059669 !important;
+  filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.35));
+}
+.ts-qualification-banner--winner .ts-passport-progress-bar { background: rgba(16, 185, 129, 0.18) !important; }
+.ts-qualification-banner--winner .ts-passport-progress-fill {
+  background: linear-gradient(90deg, #10b981, #059669) !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.5) !important;
+}
+.ts-qualification-banner--winner .ts-passport-progress-labels { color: #065f46 !important; }
+
+/* Target reached on Welcome page */
+.ts-info-card--target-reached {
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.92), rgba(167, 243, 208, 0.8)) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.85) !important;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.95), 0 12px 28px rgba(16, 185, 129, 0.2) !important;
+}
+.ts-info-card--target-reached .ts-info-card__value { color: #064e3b !important; }
+.ts-info-card--target-reached .ts-info-card__label { color: #047857 !important; font-weight: 800 !important; }
+
+.ts-hero-passport-link--winner {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border: 1px solid rgba(52, 211, 153, 0.6) !important;
+  color: #065f46 !important;
+  padding: 6px 14px !important;
+  border-radius: var(--r-pill) !important;
+  font-weight: 700 !important;
+}
+.ts-stat-cell--winner .ts-stat-card__number { color: #059669 !important; }
+.ts-stat-cell--winner .ts-stat-card__label { color: #047857 !important; font-weight: 800 !important; }
+.ts-passport-scan-qr-btn--limit {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #065f46 !important;
+  opacity: 0.9;
+}
+.ts-qualification-title, .ts-milestone-title { color: var(--ink); }
+.ts-qualification-desc { color: var(--ink2); }
+.ts-passport-progress-bar, .ts-progress-bar { background: var(--trk); }
+.ts-passport-progress-fill, .ts-progress-bar__fill { background: linear-gradient(90deg, #ff934c, #ff3c7e); box-shadow: 0 0 10px rgba(255,76,126,.25); }
+.ts-stat-cell--tl, .ts-stat-cell--tr, .ts-stat-cell--bl { border-color: rgba(255,255,255,.82); }
+
+.ts-booth-card, .ts-showcase-booth-card, .ts-topic-card, .ts-option { color: var(--ink); background: linear-gradient(135deg, rgba(255,255,255,.66), rgba(255,255,255,.3)); }
+.ts-booth-card__title, .ts-showcase-booth-card__title, .ts-topic-card__title, .ts-option__text { color: var(--ink); }
+.ts-booth-card__desc, .ts-showcase-booth-card__desc { color: var(--ink2); }
+.ts-pill-todo { background: rgba(255,255,255,.55); border-color: rgba(255,255,255,.85); color: var(--ink); }
+.ts-pill-done { color: var(--ok); background: var(--okbg); border-color: var(--okbd); }
+.ts-booth-card--completed, .ts-showcase-booth-card--active { border-color: var(--okbd); }
+.ts-option { border-color: rgba(255,255,255,.9); box-shadow: 0 5px 14px rgba(72,82,135,.1); }
+.ts-option:hover { background: rgba(255,255,255,.8); border-color: #ff6a92; }
+.ts-option--selected { border-color: #ff3c7e !important; background: rgba(255,190,217,.38); box-shadow: 0 0 0 2px rgba(255,60,126,.18); }
+.ts-option__letter { color: #c44719; background: rgba(255,255,255,.58); border-color: rgba(255,255,255,.9); }
+.ts-option--selected .ts-option__letter { background: linear-gradient(135deg, #ff934c, #ff3c7e); color: #fff; }
+.ts-option__radio-indicator { color: #ff3c7e; }
+
+.ts-field__label { color: var(--ink); }
+.ts-field__input { background: rgba(255,255,255,.62); border-color: rgba(255,255,255,.92); color: var(--ink); box-shadow: inset 0 1px 4px rgba(75,85,130,.08); }
+.ts-field__input::placeholder { color: #7b86a4; }
+.ts-field__input:focus { background: rgba(255,255,255,.86); border-color: #ff5b8c; box-shadow: 0 0 0 3px rgba(255,91,140,.16); color: var(--ink); }
+.ts-field__error { color: #bd3753; }
+
+.ts-mobile-nav { background: var(--nav); border-color: rgba(255,255,255,.9); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), 0 12px 28px rgba(75,85,135,.16); }
+.ts-mobile-nav__item { color: #4d5a7e; }
+.ts-mobile-nav__item--active { color: #ff3c7e; }
+.ts-mobile-nav__passport-bubble { background: linear-gradient(135deg, #ff934c, #ff3c7e); box-shadow: 0 8px 18px rgba(255,60,126,.35); }
+
+.ts-modal-overlay { background: rgba(75,81,130,.24); }
+.ts-modal-close-btn, .ts-modal-header__icon-badge { background: rgba(255,255,255,.62); border-color: rgba(255,255,255,.9); color: var(--ink); }
+.ts-modal-content h3, .ts-modal-title { color: var(--ink); }
+.ts-scanner-toast { background: rgba(255,255,255,.9); border-color: #ff5c8e; color: var(--ink); }
+.ts-error-message { color: #bd3753; }
+
+@media (min-width: 768px) { .ts-layout__main { max-width: 720px; } .ts-page { padding-left: 24px; padding-right: 24px; } }
+
+/* Scanner overlay */
+.ts-scanner-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(12, 16, 36, 0.72);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  animation: ts-overlay-in 220ms ease both;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.ts-scanner-modal {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: min(860px, calc(100dvh - 32px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: auto;
+  padding: 22px;
+  background: linear-gradient(145deg, rgba(255,255,255,.95), rgba(246,239,255,.88));
+  border: 1px solid rgba(255,255,255,.95);
+  border-radius: 28px;
+  box-shadow: 0 26px 80px rgba(15, 23, 42, .4), inset 0 1px 0 rgba(255,255,255,.95);
+  animation: ts-modal-in 280ms cubic-bezier(.16,1,.3,1) both;
+  box-sizing: border-box;
+}
+
+.ts-scanner-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.ts-scanner-tag { display: block; color: #bf461a; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+.ts-scanner-title { margin: 0; color: var(--ink); font-size: clamp(21px, 5vw, 28px); line-height: 1.15; }
+.ts-scanner-close { width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.95); border-radius: 50%; background: rgba(255,255,255,.68); color: var(--ink); cursor: pointer; transition: transform 180ms ease, background 180ms ease; }
+.ts-scanner-close:hover { background: #fff; transform: rotate(90deg) scale(1.05); }
+.ts-scanner-body { min-width: 0; }
+.ts-scanner-viewport-wrap { position: relative; overflow: hidden; min-height: 280px; border-radius: 20px; background: #17203a; box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); }
+.ts-scanner-video-container { width: 100%; min-height: 280px; }
+.ts-scanner-video-container video { display: block; width: 100% !important; height: auto !important; object-fit: cover; }
+.ts-scanner-video-container img { max-width: 100%; }
+.ts-scanner-overlay { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.ts-scanner-target-box { position: relative; width: min(68vw, 270px); aspect-ratio: 1; border: 1px solid rgba(255,255,255,.25); border-radius: 14px; box-shadow: 0 0 0 999px rgba(8, 14, 34, .18); }
+.ts-scanner-corner { position: absolute; width: 34px; height: 34px; border-color: #fff; border-style: solid; filter: drop-shadow(0 0 7px rgba(255,255,255,.55)); }
+.ts-scanner-corner--tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-radius: 10px 0 0 0; }
+.ts-scanner-corner--tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-radius: 0 10px 0 0; }
+.ts-scanner-corner--bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-radius: 0 0 0 10px; }
+.ts-scanner-corner--br { right: -2px; bottom: -2px; border-width: 0 4px 4px 0; border-radius: 0 0 10px 0; }
+.ts-scanner-laser { position: absolute; left: 10px; right: 10px; top: 50%; height: 2px; background: linear-gradient(90deg, transparent, #ff4f89, transparent); box-shadow: 0 0 12px #ff4f89; animation: ts-scan-line 2s ease-in-out infinite; }
+.ts-scanner-status-overlay { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; color: #fff; background: rgba(15, 24, 54, .7); font-weight: 700; }
+.ts-scanner-status-overlay--error, .ts-scanner-status-overlay--mismatch { background: rgba(32, 35, 68, .84); }
+.ts-scanner-spinner { width: 34px; height: 34px; border: 3px solid rgba(255,255,255,.35); border-top-color: #ff6a92; border-radius: 50%; animation: ts-spin .8s linear infinite; }
+.ts-scanner-instruction { margin: 14px 0; color: var(--ink2); font-size: 13px; line-height: 1.5; }
+.ts-scanner-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.ts-scanner-tool-btn, .ts-scanner-cancel-btn, .ts-scanner-retry-btn { min-height: 38px; padding: 8px 13px; border: 1px solid rgba(255,255,255,.92); border-radius: 999px; background: rgba(255,255,255,.68); color: var(--ink); font: 700 12px var(--font); cursor: pointer; transition: transform 180ms ease, background 180ms ease; }
+.ts-scanner-tool-btn:hover, .ts-scanner-cancel-btn:hover, .ts-scanner-retry-btn:hover { background: #fff; transform: translateY(-1px); }
+.ts-scanner-footer { display: flex; justify-content: flex-end; margin-top: 14px; }
+.ts-scanner-cancel-btn { background: linear-gradient(135deg, #ff934c, #ff3c7e); color: #fff; border-color: rgba(255,255,255,.8); }
+.ts-scanner-camera-picker { display: flex; align-items: center; gap: 6px; color: var(--ink2); font-size: 12px; }
+.ts-scanner-camera-picker select { min-height: 38px; width: auto; padding: 6px 28px 6px 10px; }
+.ts-scanner-err-text, .ts-scanner-mismatch-desc, .ts-scanner-mismatch-instruction { max-width: 360px; margin: 0; line-height: 1.45; }
+.ts-scanner-mismatch-title { color: #ff9ab5; font-size: 14px; font-weight: 800; letter-spacing: .08em; }
+
+@keyframes ts-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ts-modal-in { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ts-scan-line { 0%, 100% { transform: translateY(-108px); opacity: .45; } 50% { transform: translateY(108px); opacity: 1; } }
+@keyframes ts-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ts-scanner-backdrop, .ts-scanner-modal, .ts-scanner-laser { animation: none; }
+}
+
+/* Premium black glass mode */
+:root {
+  --bg: #05060b;
+  --ink: #f7f8ff;
+  --ink2: #c4cbe7;
+  --gold: #ffb17b;
+  --ga: rgba(255,255,255,.13);
+  --gb: rgba(255,255,255,.045);
+  --bd: rgba(255,255,255,.25);
+  --sh: rgba(0,0,0,.48);
+  --nav: rgba(18,23,47,.76);
+  --trk: rgba(255,255,255,.16);
+  --ok: #8affe0;
+  --okbg: rgba(85,224,190,.2);
+  --okbd: rgba(117,255,220,.62);
+  --text-primary: #f7f8ff;
+  --text-secondary: #c4cbe7;
+}
+
+html, body {
+  background:
+    radial-gradient(circle at 88% -8%, rgba(75,101,211,.42), transparent 34%),
+    radial-gradient(circle at 2% 52%, rgba(143,38,110,.28), transparent 38%),
+    radial-gradient(circle at 92% 100%, rgba(31,142,133,.25), transparent 32%),
+    #05060b;
+}
+
+.ts-page { padding-top: 14px; padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+.ts-page--welcome { padding-top: 6px; }
+.ts-event-banner { padding: 8px; margin-bottom: 10px; background: rgba(255,255,255,.09); }
+.ts-event-banner__image { border-radius: 12px; }
+.ts-hero-card { margin-bottom: 10px; padding: 16px; background: linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.055)); }
+.ts-info-cards { margin-bottom: 12px; gap: 8px; }
+.ts-showcase-section { margin-bottom: 10px; }
+.ts-showcase-section__heading-row { margin-bottom: 10px; }
+
+.glass, .ts-glass, .ts-event-banner, .ts-hero-card, .ts-info-card, .ts-showcase-booth-card,
+.ts-qualification-banner, .ts-passport-stats-grid, .ts-booth-card, .ts-question-card,
+.ts-score-card, .ts-milestone-card, .ts-already-summary, .ts-modal-card, .ts-scanner-modal,
+.ts-participant-card, .ts-topic-card, .ts-topics-header, .ts-topics-rotation-banner,
+.ts-sync-destination-card {
+  background: linear-gradient(135deg, rgba(255,255,255,.145), rgba(255,255,255,.045));
+  border-color: rgba(255,255,255,.26);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.28), 0 14px 32px rgba(0,0,0,.3);
+}
+
+.ts-header { background: rgba(5,6,11,.26); border-bottom-color: rgba(255,255,255,.14); box-shadow: 0 5px 22px rgba(0,0,0,.2); }
+.ts-header__badge, .ts-header__passport-btn, .ts-passport-edit-btn, .ts-passport-scan-qr-btn,
+.ts-showcase-view-all, .ts-btn--secondary, .ts-mobile-nav__item, .ts-qualification-pill, .ts-timer {
+  color: var(--ink);
+}
+.ts-header__badge, .ts-header__passport-btn, .ts-passport-edit-btn, .ts-passport-scan-qr-btn,
+.ts-showcase-view-all, .ts-qualification-pill, .ts-timer { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); }
+.ts-header__passport-btn:hover, .ts-passport-edit-btn:hover, .ts-passport-scan-qr-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+.ts-page__title, .ts-page__title--sm, .ts-hero-title, .ts-showcase-section__title, .ts-passport-user-name,
+.ts-qualification-title, .ts-matrix-title, .ts-topic-card__title, .ts-question-card__text,
+.ts-score-card__message, .ts-milestone-title, .ts-modal-title, .ts-booth-card__title,
+.ts-showcase-booth-card__title, .ts-option__text, .ts-info-card__value, .ts-stat-card__number { color: var(--ink); }
+.ts-page__description, .ts-topic-card__desc, .ts-rotation-desc, .ts-milestone-desc, .ts-page__footer,
+.ts-matrix-subtitle, .ts-passport-user-email, .ts-quiz-count-pill, .ts-score-card__disclaimer,
+.ts-already-summary__row, .ts-modal-content, .ts-booth-card__desc, .ts-showcase-booth-card__desc,
+.ts-info-card__label, .ts-stat-card__label { color: var(--ink2); }
+.ts-hero-eyebrow, .ts-showcase-view-all, .ts-header__badge, .ts-qualification-pill, .ts-topic-card__index,
+.ts-topics-badge, .ts-quiz-booth-pill, .ts-results-booth-pill, .ts-restriction-badge { color: var(--gold); }
+
+.ts-qualification-banner--progress, .ts-score-card, .ts-milestone-card--progress { background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.05)); border-color: rgba(255,255,255,.25); }
+.ts-qualification-banner--winner, .ts-milestone-card--winner {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.2) 55%, rgba(6, 78, 59, 0.35) 100%) !important;
+  border-color: rgba(52, 211, 153, 0.7) !important;
+}
+.ts-qualification-banner--winner .ts-qualification-title,
+.ts-milestone-card--winner .ts-milestone-title { color: #6ee7b7 !important; }
+.ts-qualification-banner--winner .ts-qualification-desc,
+.ts-milestone-card--winner .ts-milestone-desc { color: #a7f3d0 !important; }
+.ts-qualification-banner--winner .ts-qualification-pill {
+  background: rgba(16, 185, 129, 0.28) !important;
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  color: #6ee7b7 !important;
+}
+.ts-qualification-desc { color: var(--ink2); }
+.ts-pill-todo { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: var(--ink2); }
+.ts-pill-done { color: var(--ok); background: var(--okbg); border-color: var(--okbd); }
+.ts-option { background: linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.045)); border-color: rgba(255,255,255,.22); box-shadow: 0 6px 16px rgba(0,0,0,.24); }
+.ts-option:hover { background: rgba(255,255,255,.2); border-color: #ff709d; }
+.ts-option--selected { border-color: #ff3c7e !important; background: rgba(255,60,126,.18); box-shadow: 0 0 0 2px rgba(255,60,126,.2), 0 8px 20px rgba(0,0,0,.25); }
+.ts-option__letter { color: var(--gold); background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); }
+.ts-option__radio-indicator { color: #ff709d; }
+.ts-field__label { color: var(--ink); }
+.ts-field__input { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.24); color: var(--ink); box-shadow: inset 0 1px 4px rgba(0,0,0,.22); }
+.ts-field__input::placeholder { color: #8f97b7; }
+.ts-field__input:focus { background: rgba(255,255,255,.16); color: #fff; }
+.ts-modal-overlay { background: rgba(0,0,0,.7); }
+.ts-modal-close-btn, .ts-modal-header__icon-badge { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.25); color: var(--ink); }
+
+.ts-celebration { position: fixed; inset: 0; z-index: 300; pointer-events: none; overflow: hidden; display: grid; place-items: center; }
+.ts-celebration__backdrop { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(255,72,133,.18), rgba(2,3,8,.7) 68%); animation: ts-celebration-glow 1.1s ease-out both; }
+.ts-celebration__message { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 22px 28px; border: 1px solid rgba(255,255,255,.3); border-radius: 24px; background: rgba(18,21,43,.78); box-shadow: 0 18px 50px rgba(0,0,0,.4); color: #fff; text-align: center; animation: ts-celebration-pop 600ms cubic-bezier(.16,1,.3,1) both; }
+.ts-celebration__eyebrow { color: #ffb17b; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+.ts-celebration__message strong { font-size: clamp(22px, 6vw, 32px); }
+.ts-celebration__message span:last-child { color: #c4cbe7; font-size: 13px; }
+.ts-confetti { position: absolute; inset: 0; }
+.ts-confetti__piece { position: absolute; left: var(--confetti-x); top: -8%; width: 10px; height: 18px; border-radius: 3px; background: var(--confetti-color); opacity: 0; animation: ts-confetti-fall var(--confetti-duration) var(--confetti-delay) ease-in forwards; transform: rotate(var(--confetti-rotate)); }
+@keyframes ts-celebration-glow { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ts-celebration-pop { from { opacity: 0; transform: scale(.82) translateY(14px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes ts-confetti-fall { 0% { opacity: 0; transform: translate3d(0, -10vh, 0) rotate(0); } 10% { opacity: 1; } 100% { opacity: 0; transform: translate3d(12vw, 118vh, 0) rotate(680deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ts-celebration__backdrop, .ts-celebration__message, .ts-confetti__piece { animation: none; }
+}
+
+/* Shared transparent blue glass surface */
+.glass, .ts-glass, .ts-event-banner, .ts-hero-card, .ts-info-card, .ts-showcase-booth-card,
+.ts-qualification-banner, .ts-passport-stats-grid, .ts-booth-card, .ts-question-card,
+.ts-score-card, .ts-milestone-card, .ts-already-summary, .ts-modal-card, .ts-scanner-modal,
+.ts-participant-card, .ts-topic-card, .ts-topics-header, .ts-topics-rotation-banner,
+.ts-sync-destination-card {
+  background: linear-gradient(145deg, rgba(96,139,255,.24), rgba(28,41,89,.38));
+  border-color: rgba(191,211,255,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 18px 44px rgba(0,0,0,.34), 0 0 32px rgba(56,94,210,.08);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+
+.ts-hero-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 0;
+  padding: clamp(18px, 4vw, 30px);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(105,157,255,.28), transparent 44%),
+    linear-gradient(145deg, rgba(111,151,255,.27), rgba(19,27,64,.5));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.36), 0 24px 58px rgba(0,0,0,.42), 0 0 42px rgba(60,102,235,.15);
+}
+.ts-hero-card::before { content: ''; position: absolute; inset: 1px; z-index: -1; border-radius: 27px; background: linear-gradient(120deg, rgba(255,255,255,.06), transparent 45%, rgba(104,154,255,.1)); pointer-events: none; }
+.ts-hero-content { gap: 16px; }
+.ts-hero-copy { gap: 10px; }
+.ts-hero-eyebrow { color: #a9c8ff; background: rgba(112,161,255,.15); border-color: rgba(184,214,255,.34); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+.ts-hero-title { letter-spacing: -.045em; text-shadow: 0 3px 22px rgba(0,0,0,.3); }
+.ts-gradient-text { background: linear-gradient(100deg, #8ed6ff, #c5b8ff 52%, #ff94c5); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ts-hero-description { color: #d0d9f5; max-width: 610px; }
+.ts-hero-art { filter: saturate(.85) drop-shadow(0 10px 24px rgba(88,135,255,.24)); opacity: .9; }
+.ts-hero-primary-btn { box-shadow: 0 13px 30px rgba(255,60,126,.3), inset 0 1px 0 rgba(255,255,255,.52); }
+.ts-hero-passport-link, .ts-hero-rules-link { color: #a9c8ff; }
+.ts-hero-passport-link:hover, .ts-hero-rules-link:hover { color: #fff; }
+.ts-info-card { background: linear-gradient(145deg, rgba(94,138,255,.2), rgba(29,40,83,.34)); }
+.ts-showcase-booth-card:hover, .ts-booth-card[role="button"]:hover { border-color: rgba(157,199,255,.72); background: linear-gradient(145deg, rgba(112,161,255,.3), rgba(39,51,103,.42)); box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 18px 42px rgba(26,54,138,.34); }
+.ts-showcase-view-all { background: rgba(113,163,255,.14); border-color: rgba(182,211,255,.32); color: #bcd5ff; }
+.ts-hero-scanned-card { background: rgba(99,151,255,.2); border-color: rgba(190,219,255,.42); }
+.ts-hero-scanned-label, .ts-showcase-booth-card__num { color: #a9c8ff; }
+
+@media (max-width: 767px) {
+  .ts-hero-card { border-radius: 24px; padding: 18px 16px; }
+  .ts-hero-title { font-size: clamp(34px, 10vw, 48px); }
+  .ts-hero-description { font-size: 13px; }
+}
+
+/* ==========================================================================
+   IMAGE 2 EXACT TARGET DESIGN: CYBER-ARCADE SHOWCASE & CODE REVIEW
+   ========================================================================== */
+
+/* 1. Showcase Header */
+.ts-showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.ts-showcase-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-showcase-target-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));
+}
+
+.ts-showcase-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.ts-showcase-title {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #FFFFFF;
+  text-transform: uppercase;
+}
+
+.ts-showcase-tagline {
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #F59E0B 0%, #F97316 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.02em;
+}
+
+.ts-showcase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid #1e40af;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(30, 64, 175, 0.3);
+}
+
+/* 2. Question Counter & Timer Bar */
+.ts-quiz-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.ts-quiz-meta-qnum {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ts-quiz-meta-divider {
+  color: #38bdf8;
+  font-size: 1.15rem;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.ts-quiz-meta-timer .ts-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #09122a !important;
+  border: 1.5px solid #1e40af !important;
+  border-radius: 9999px !important;
+  padding: 5px 14px !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 14px rgba(30, 64, 175, 0.3) !important;
+}
+
+.ts-quiz-meta-timer .ts-timer__icon-wrap {
+  color: #38bdf8 !important;
+  display: flex;
+  align-items: center;
+  animation: none !important;
+}
+
+.ts-quiz-meta-timer .ts-timer__content {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.ts-quiz-meta-timer .ts-timer__value {
+  font-family: var(--font-sans, sans-serif) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  color: #FFFFFF !important;
+  text-shadow: none !important;
+}
+
+.ts-quiz-meta-timer .ts-timer__unit {
+  font-family: var(--font-sans, sans-serif) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em;
+  color: #94A3B8 !important;
+}
+
+/* 3. Glowing Neon Card (Image 2) */
+.ts-question-card,
+.ts-question-card--game {
+  background: rgba(8, 14, 30, 0.96) !important;
+  border: 2px solid #1a56db !important;
+  box-shadow: 0 0 25px rgba(26, 86, 219, 0.4), 0 20px 50px rgba(0, 0, 0, 0.7) !important;
+  border-radius: 24px !important;
+  padding: 22px 18px !important;
+  position: relative !important;
+  color: #FFFFFF !important;
+  box-sizing: border-box !important;
+}
+
+.ts-game-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.ts-game-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ts-game-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ts-game-pill--challenge {
+  background: rgba(79, 70, 229, 0.22);
+  border: 1.5px solid #6366f1;
+  color: #e0e7ff;
+}
+
+.ts-game-pill--category {
+  background: rgba(14, 165, 233, 0.18);
+  border: 1.5px solid #0284c7;
+  color: #bae6fd;
+}
+
+.ts-game-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-left: auto;
+}
+
+.ts-game-status-pill--failed {
+  color: #ef4444;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.ts-game-status-pill--won {
+  color: #22c55e;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+.ts-question-card__text {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #FFFFFF !important;
+  line-height: 1.35 !important;
+  margin: 0 0 14px 0 !important;
+  letter-spacing: -0.01em;
+}
+
+/* 4. Code Review Game (Image 2) */
+.ts-code-instruction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a5b4fc;
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.ts-code-bulb {
+  font-size: 1.15rem;
+}
+
+.ts-code-display-box {
+  background: #060b18;
+  border: 1.5px solid #1e3a8a;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.84rem;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.ts-code-display-line {
+  display: flex;
+  align-items: baseline;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.ts-code-display-line--bug {
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid #ef4444;
+}
+
+.ts-code-display-gutter {
+  color: #64748b;
+  width: 28px;
+  flex-shrink: 0;
+  user-select: none;
+  font-size: 0.8rem;
+}
+
+.ts-code-display-code {
+  flex: 1;
+  word-break: break-word;
+}
+
+.syn-kw { color: #38bdf8; font-weight: 600; }
+.syn-str { color: #f43f5e; }
+.syn-bool { color: #c084fc; font-weight: 600; }
+.syn-comment { color: #4ade80; font-style: italic; margin-left: 6px; }
+.syn-plain { color: #e2e8f0; }
+
+.ts-code-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ts-code-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #0c142b;
+  border: 1.5px solid #1e40af;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  color: #FFFFFF;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.84rem;
+  transition: all 0.15s ease;
+  user-select: none;
+  line-height: 1.4;
+  width: 100%;
+}
+
+.ts-code-option-btn:hover:not(:disabled) {
+  background: #111c3d;
+  border-color: #3b82f6;
+}
+
+.ts-code-option-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.ts-code-option-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+  font-family: var(--font-sans, sans-serif);
+  transition: all 0.15s ease;
+}
+
+.ts-code-option-text {
+  flex: 1;
+  word-break: break-word;
+}
+
+.ts-code-option-btn--wrong {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.15) !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.3) !important;
+}
+
+.ts-code-option-btn--wrong .ts-code-option-num {
+  background: #ef4444 !important;
+}
+
+.ts-code-option-btn--correct {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.15) !important;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.3) !important;
+}
+
+.ts-code-option-btn--correct .ts-code-option-num {
+  background: #22c55e !important;
+}
+
+.ts-code-option-btn--revealed {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.12) !important;
+}
+
+.ts-code-option-btn--revealed .ts-code-option-num {
+  background: #22c55e !important;
+}
+
+/* 5. Navigation Buttons (Image 2) */
+.ts-quiz-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.ts-quiz-actions .ts-btn--secondary {
+  background: #0b1228 !important;
+  border: 1.5px solid #1e40af !important;
+  color: #FFFFFF !important;
+  border-radius: 9999px !important;
+  font-weight: 700 !important;
+  padding: 12px 28px !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ts-quiz-actions .ts-btn--primary {
+  background: linear-gradient(90deg, #ff5e36 0%, #ff2a85 100%) !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  border-radius: 9999px !important;
+  font-weight: 800 !important;
+  padding: 12px 28px !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 4px 20px rgba(255, 42, 133, 0.45) !important;
+  letter-spacing: 0.05em;
+}
+
+/* 6. MCQ Option Styling harmonious with Image 2 */
+.ts-question-card__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ts-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  background: #0c142b;
+  border: 1.5px solid #1e40af;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  color: #FFFFFF;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.92rem;
+  transition: all 0.15s ease;
+  user-select: none;
+  width: 100%;
+}
+
+.ts-option:hover {
+  background: #111c3d;
+  border-color: #3b82f6;
+}
+
+.ts-option:active {
+  transform: scale(0.985);
+}
+
+.ts-option__letter {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+}
+
+.ts-option__text {
+  flex: 1;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.ts-option--selected {
+  border-color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.16) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3) !important;
+}
+
+.ts-option--selected .ts-option__letter {
+  background: #38bdf8 !important;
+  color: #0c142b !important;
+}
+
+

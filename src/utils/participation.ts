@@ -6,12 +6,12 @@ export function normalizeText(input: string): string {
 }
 
 export async function generateParticipationKey(
-  participant: Pick<Participant, 'name' | 'entId'>,
+  participant: Pick<Participant, 'name'> & Partial<Participant>,
 ): Promise<string> {
   const normalizedName = normalizeText(participant.name);
-  const normalizedEntId = normalizeText(participant.entId || '');
+  const normalizedEmail = normalizeText(participant.email || participant.entId || '');
   const deviceId = getDeviceId();
-  const raw = `${normalizedName}|${normalizedEntId}|${deviceId}`;
+  const raw = `${normalizedName}|${normalizedEmail}|${deviceId}`;
 
   if (globalThis.crypto?.subtle) {
     const buf = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));

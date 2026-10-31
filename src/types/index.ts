@@ -1,10 +1,10 @@
 export interface Participant {
   name: string;
-  entId: string;
-  lob?: string;
-  company?: string;
+  email: string;
   role?: string;
-  email?: string;
+  entId?: string; // Legacy fallback
+  lob?: string;   // Legacy fallback
+  company?: string;
 }
 
 export interface DeviceMetadata {
@@ -27,6 +27,29 @@ export interface Participation {
   attemptNumber: number;
 }
 
+export type ChallengeType = 'mcq' | 'game';
+
+export type GameType =
+  | 'zombie_gpu'
+  | 'phish_swipe'
+  | 'code_roast'
+  | 'pipeline_order'
+  | 'prompt_whisperer'
+  | 'dns_firefighter'
+  | 'fraud_blitz'
+  | 'emoji_decipher'
+  // New fun emoji-based mini-game templates
+  | 'memory_missing'
+  | 'grid_tap'
+  | 'odd_one'
+  | 'pair_match'
+  | 'sequence'
+  | 'timer_stop'
+  | 'luck_pick'
+  | 'sort_bucket'
+  | 'pattern_quiz'
+  | 'crowd_judge';
+
 export interface QuizQuestion {
   id: string;
   category: string;
@@ -34,6 +57,10 @@ export interface QuizQuestion {
   question: string;
   options: string[];
   correctAnswer: number;
+  itemType?: ChallengeType;
+  gameType?: GameType;
+  gameData?: any;
+  explanation?: string;
 }
 
 export interface QuizAnswer {
@@ -65,6 +92,7 @@ export interface BoothConfig {
 }
 
 export interface QuizState {
+  participantEmail: string;
   boothId: string;
   boothNumber: number;
   boothTitle: string;

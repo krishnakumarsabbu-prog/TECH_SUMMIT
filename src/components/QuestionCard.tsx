@@ -1,4 +1,17 @@
 import type { QuizQuestion } from '../types';
+import {
+  BotIcon,
+  CloudIcon,
+  ShieldIcon,
+  ZapIcon,
+  BrainIcon,
+  TrendingUpIcon,
+  LandmarkIcon,
+  ServerIcon,
+  RocketIcon,
+  SparklesIcon,
+} from './Icons';
+import { playAnswerSound } from '../utils/qrHelper';
 
 interface QuestionCardProps {
   question: QuizQuestion;
@@ -8,36 +21,27 @@ interface QuestionCardProps {
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'Artificial Intelligence': '🤖',
-  'Generative AI': '🤖',
-  'Cloud': '☁️',
-  'Cloud Native': '☁️',
-  'Cybersecurity': '🛡️',
-  'Security': '🛡️',
-  'Data Engineering': '📊',
-  'Data': '📊',
-  'DevOps': '⚡',
-  'Architecture': '🏛️',
-  'IoT': '📡',
-  'Web3': '🔗',
-  'Quantum': '⚛️',
-};
-
-function getCategoryIcon(category: string): string {
-  const match = Object.keys(CATEGORY_ICONS).find((k) =>
-    category.toLowerCase().includes(k.toLowerCase())
-  );
-  return match ? CATEGORY_ICONS[match] : '💡';
+function renderCategoryIcon(category: string) {
+  const c = (category || '').toLowerCase();
+  if (c.includes('agent') || c.includes('identity')) return <BotIcon size={16} />;
+  if (c.includes('cloud')) return <CloudIcon size={16} />;
+  if (c.includes('security') || c.includes('governance')) return <ShieldIcon size={16} />;
+  if (c.includes('software') || c.includes('dev')) return <ZapIcon size={16} />;
+  if (c.includes('intelligence') || c.includes('ai platform')) return <BrainIcon size={16} />;
+  if (c.includes('business') || c.includes('data')) return <TrendingUpIcon size={16} />;
+  if (c.includes('bank') || c.includes('risk')) return <LandmarkIcon size={16} />;
+  if (c.includes('sre') || c.includes('platform')) return <ServerIcon size={16} />;
+  if (c.includes('quality') || c.includes('ci/cd') || c.includes('engineering')) return <RocketIcon size={16} />;
+  return <SparklesIcon size={16} />;
 }
 
 export function QuestionCard({ question, selectedIndex, onSelect }: QuestionCardProps) {
-  const icon = getCategoryIcon(question.category);
-
   return (
     <div className="ts-question-card">
       <div className="ts-question-card__category">
-        <span className="ts-question-card__category-icon" aria-hidden="true">{icon}</span>
+        <span className="ts-question-card__category-icon" aria-hidden="true">
+          {renderCategoryIcon(question.category)}
+        </span>
         <span>{question.category}</span>
       </div>
 
@@ -53,7 +57,10 @@ export function QuestionCard({ question, selectedIndex, onSelect }: QuestionCard
               role="radio"
               aria-checked={selected}
               className={`ts-option ${selected ? 'ts-option--selected' : ''}`}
-              onClick={() => onSelect(idx)}
+              onClick={() => {
+                playAnswerSound();
+                onSelect(idx);
+              }}
             >
               <span className="ts-option__letter" aria-hidden="true">
                 {LETTERS[idx]}

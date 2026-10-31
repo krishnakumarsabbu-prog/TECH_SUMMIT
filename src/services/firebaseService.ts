@@ -5,18 +5,22 @@ import {
   getDoc,
   setDoc,
   collection,
+  collectionGroup,
   getDocs,
 } from 'firebase/firestore';
 import type { Participant, BoothResult, Submission } from '../types';
+import { collectDeviceMetadata } from '../utils/deviceFingerprint';
+import { getBoothResults } from '../utils/storage';
+import { REQUIRED_BOOTHS_TO_WIN } from '../data/boothsConfig';
 
 // Web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: (import.meta as any).env?.VITE_FIREBASE_API_KEY || 'AIzaSyCya0vK44ibwcSLKWvPRK7YTYrsKgUAWOA',
-  authDomain: (import.meta as any).env?.VITE_FIREBASE_AUTH_DOMAIN || 'tech-summit-2026-c9d17.firebaseapp.com',
-  projectId: (import.meta as any).env?.VITE_FIREBASE_PROJECT_ID || 'tech-summit-2026-c9d17',
-  storageBucket: (import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || 'tech-summit-2026-c9d17.firebasestorage.app',
-  messagingSenderId: (import.meta as any).env?.VITE_FIREBASE_MESSAGING_SENDER_ID || '491544199634',
-  appId: (import.meta as any).env?.VITE_FIREBASE_APP_ID || '1:491544199634:web:992c9b3f891212ae9d480b',
+  apiKey: "AIzaSyDN01MPv0CZyrytoGiE-ncNTbN1do5chPY",
+  authDomain: "innovation-showcase-2026-d19de.firebaseapp.com",
+  projectId: "innovation-showcase-2026-d19de",
+  storageBucket: "innovation-showcase-2026-d19de.firebasestorage.app",
+  messagingSenderId: "178394050941",
+  appId: "1:178394050941:web:7c85ec9b28571981ec1c14"
 };
 
 // Initialize Firebase singleton
@@ -31,187 +35,219 @@ export interface ParticipantFetchResult {
   error?: string;
 }
 
-/**
- * Registers participant in Firestore: participants/{entId}
- * Preserves any existing test results using { merge: true }.
- */
-export async function registerParticipantInFirestore(participant: Participant): Promise<{ success: boolean; error?: string }> {
-  const entId = (participant.entId || 'UNKNOWN').trim().toUpperCase();
-  if (!entId || entId === 'UNKNOWN') {
-    return { success: false, error: 'Invalid Enterprise ID' };
+export function getParticipantDocKey(p: Partial<Participant> | string): string {
+  if (typeof p === 'string') {
+    return p.trim().toLowerCase();
   }
-
-  const now = new Date().toISOString();
-  const participantRef = doc(db, 'participants', entId);
-
-  try {
-    const existingSnap = await getDoc(participantRef);
-    const existingData = existingSnap.exists() ? existingSnap.data() : null;
-
-    const registrationData = {
-      entId,
-      name: participant.name,
-      lob: participant.lob || 'N/A',
-      company: participant.company || 'Wells Fargo',
-      role: participant.role || 'Summit Attendee',
-      registeredAt: existingData?.registeredAt || now,
-      status: 'REGISTERED',
-      totalTestsAppeared: existingData?.totalTestsAppeared || 0,
-      totalScore: existingData?.totalScore || 0,
-      totalQuestions: existingData?.totalQuestions || 0,
-      overallAccuracy: existingData?.overallAccuracy || 0,
-      isPrizeEligible: existingData?.isPrizeEligible || false,
-      tests: existingData?.tests || [],
-      lastUpdated: now,
-    };
-
-    await setDoc(participantRef, registrationData, { merge: true });
-    console.log(`[Firestore] ✓ Registered participant ${entId} (${participant.name})`);
-    return { success: true };
-  } catch (err: any) {
-    console.warn(`[Firestore] Failed to register participant ${entId}:`, err);
-    return { success: false, error: err.message };
-  }
+  return (p.email || p.entId || 'UNKNOWN').trim().toLowerCase();
 }
 
 /**
- * Saves completed booth quiz result into:
- * 1. Subcollection: participants/{entId}/booths/booth-{boothNumber}
- * 2. Root document: participants/{entId} (recalculated summary & prize eligibility)
- * 3. Flat collection: submissions/{submissionId} (for live analytics & export)
+ * Saves clean booth quiz result in subcollection `booths/{booth-N}`,
+ * and updates parent `participants/{email}` with device info & live summary.
  */
 export async function saveBoothResultInFirestore(
   participant: Participant,
   submission: Submission,
-  allBoothResults: Record<string, BoothResult>
 ): Promise<{ success: boolean; error?: string }> {
-  const entId = (participant.entId || 'UNKNOWN').trim().toUpperCase();
+  const docKey = getParticipantDocKey(participant);
+  if (!docKey || docKey === 'unknown') {
+    return { success: false, error: 'Invalid participant email' };
+  }
+
   const boothNumber = submission.booth?.boothNumber || 1;
+  const boothId = submission.booth?.boothId || `booth-${boothNumber}`;
   const now = submission.submission?.completedAt || new Date().toISOString();
 
   try {
-    // 1. Save specific booth result in subcollection
-    const boothDocRef = doc(db, 'participants', entId, 'booths', `booth-${boothNumber}`);
-    await setDoc(boothDocRef, {
-      ...submission,
-      savedAt: now,
-    });
-
-    // 2. Also save to flat collection for real-time summit analytics & export
-    const subId = submission.submission?.submissionId || `TS_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const submissionRef = doc(db, 'submissions', subId);
-    await setDoc(submissionRef, {
-      ...submission,
-      savedAt: now,
-    });
-
-    // 3. Recalculate participant aggregated summary
-    const completedList = Object.values(allBoothResults);
-    let totalScore = 0;
-    let totalQuestions = 0;
-    completedList.forEach((r) => {
-      totalScore += r.score;
-      totalQuestions += r.totalQuestions;
-    });
-
-    const accuracy = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
-    const totalTests = completedList.length;
-
-    const summaryData = {
-      entId,
-      name: participant.name,
-      lob: participant.lob || 'N/A',
-      company: participant.company || 'Wells Fargo',
-      role: participant.role || 'Summit Attendee',
-      totalTestsAppeared: totalTests,
-      totalScore,
-      totalQuestions,
-      overallAccuracy: accuracy,
-      isPrizeEligible: totalTests >= 4,
-      lastUpdated: now,
-      tests: completedList.map((r) => ({
-        boothId: r.boothId,
-        boothNumber: r.boothNumber,
-        boothTitle: r.boothTitle,
-        topicTitle: r.topicTitle || 'Standard Topic',
-        score: r.score,
-        totalQuestions: r.totalQuestions,
-        percentage: r.percentage,
-        timeTakenSeconds: r.timeTakenSeconds,
-        completedAt: r.completedAt,
+    // 1. Lightweight booth document: only booth test scores and answers
+    const boothDocRef = doc(db, 'participants', docKey, 'booths', `booth-${boothNumber}`);
+    const boothData = {
+      boothNumber,
+      boothId,
+      boothTitle: submission.booth?.boothTitle || `Booth ${boothNumber}`,
+      topicTitle: submission.booth?.topicTitle || '',
+      completedAt: now,
+      score: submission.quiz.score,
+      totalQuestions: submission.quiz.totalQuestions,
+      percentage: submission.quiz.percentage,
+      timeTakenSeconds: submission.quiz.timeTakenSeconds,
+      answers: submission.answers.map((a) => ({
+        questionId: a.questionId,
+        selectedAnswer: a.selectedAnswer,
+        correct: a.correct,
       })),
     };
+    await setDoc(boothDocRef, boothData);
 
-    const participantRef = doc(db, 'participants', entId);
-    await setDoc(participantRef, summaryData, { merge: true });
+    // 2. Update parent document (participants/{email}): Device details & Overall summary
+    const participantRef = doc(db, 'participants', docKey);
+    const localResults = getBoothResults(docKey);
+    const allResults = {
+      ...localResults,
+      [boothId]: {
+        score: submission.quiz.score,
+        totalQuestions: submission.quiz.totalQuestions,
+        timeTakenSeconds: submission.quiz.timeTakenSeconds,
+      },
+    };
 
-    console.log(`[Firestore] ✓ Saved booth ${boothNumber} result for ${entId} (Total tests: ${totalTests})`);
+    let totalScore = 0;
+    let totalQuestions = 0;
+    let totalTime = 0;
+    const completedList = Object.values(allResults);
+    completedList.forEach((r: any) => {
+      totalScore += r.score || 0;
+      totalQuestions += r.totalQuestions || 0;
+      totalTime += r.timeTakenSeconds || 0;
+    });
+
+    const boothsCompleted = completedList.length;
+    const accuracy = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
+    const isTargetReached = boothsCompleted >= REQUIRED_BOOTHS_TO_WIN;
+
+    await setDoc(
+      participantRef,
+      {
+        name: participant.name,
+        email: docKey,
+        role: participant.role || 'Summit Attendee',
+        lastActiveAt: now,
+        device: collectDeviceMetadata(),
+        summary: {
+          boothsCompleted,
+          totalScore,
+          totalQuestions,
+          accuracy,
+          totalTimeSeconds: totalTime,
+          isTargetReached,
+          isPrizeEligible: isTargetReached,
+        },
+      },
+      { merge: true },
+    );
+
+    console.log(`[Firestore] ✓ Saved clean booth ${boothNumber} result & updated participant summary for ${docKey}`);
     return { success: true };
   } catch (err: any) {
-    console.warn(`[Firestore] Error saving booth result for ${entId}:`, err);
+    console.warn(`[Firestore] Error saving booth result for ${docKey}:`, err);
     return { success: false, error: err.message };
   }
 }
 
 /**
- * Fetches participant details and all completed booth records from Firestore.
- * Executed when participant inputs their Enterprise ID on any device.
+ * Saves new participant registration with device metadata and initial empty summary.
  */
-export async function fetchParticipantFromFirestore(entId: string): Promise<ParticipantFetchResult> {
-  const cleanId = (entId || '').trim().toUpperCase();
+export async function saveParticipantRegistrationInFirestore(
+  participant: Participant,
+): Promise<{ success: boolean; error?: string }> {
+  const docKey = getParticipantDocKey(participant);
+  if (!docKey || docKey === 'unknown') {
+    return { success: false, error: 'Invalid participant email' };
+  }
+
+  const now = new Date().toISOString();
+
+  try {
+    await setDoc(
+      doc(db, 'participants', docKey),
+      {
+        name: participant.name,
+        email: docKey,
+        role: participant.role || 'Summit Attendee',
+        registeredAt: now,
+        lastActiveAt: now,
+        device: collectDeviceMetadata(),
+        summary: {
+          boothsCompleted: 0,
+          totalScore: 0,
+          totalQuestions: 0,
+          accuracy: 0,
+          totalTimeSeconds: 0,
+          isTargetReached: false,
+          isPrizeEligible: false,
+        },
+      },
+      { merge: true },
+    );
+    console.log(`[Firestore] ✓ Saved participant registration with device metadata for ${docKey}`);
+    return { success: true };
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err.message : String(err);
+    console.warn(`[Firestore] Error saving participant registration for ${docKey}:`, err);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Fetches participant details, device profile, and all completed booth records from Firestore.
+ */
+export async function fetchParticipantFromFirestore(identifier: string): Promise<ParticipantFetchResult> {
+  const cleanId = (identifier || '').trim().toLowerCase();
   if (!cleanId) return { exists: false };
 
   try {
-    const participantRef = doc(db, 'participants', cleanId);
-    const snap = await getDoc(participantRef);
-
-    if (!snap.exists()) {
-      return { exists: false };
+    const docKeys = [cleanId];
+    if (!cleanId.includes('@') && cleanId.toUpperCase() !== cleanId) {
+      docKeys.push(cleanId.toUpperCase());
     }
 
-    const data = snap.data();
-    const participant: Participant = {
-      name: data.name || '',
-      entId: cleanId,
-      lob: data.lob || '',
-      company: data.company || 'Wells Fargo',
-      role: data.role || 'Summit Attendee',
-    };
+    for (const docKey of docKeys) {
+      const participantRef = doc(db, 'participants', docKey);
+      const [boothsSnap, participantSnap] = await Promise.all([
+        getDocs(collection(participantRef, 'booths')),
+        getDoc(participantRef),
+      ]);
 
-    // Retrieve all completed booth results from subcollection
-    const boothsCol = collection(db, 'participants', cleanId, 'booths');
-    const boothsSnap = await getDocs(boothsCol);
-    const boothResults: Record<string, BoothResult> = {};
+      if (participantSnap.exists() || !boothsSnap.empty) {
+        const pData = participantSnap.exists() ? participantSnap.data() : {};
+        const firstBoothData = !boothsSnap.empty ? boothsSnap.docs[0].data() : {};
 
-    boothsSnap.forEach((docSnap: any) => {
-      const bData = docSnap.data();
-      const boothNumber = bData.booth?.boothNumber || 1;
-      const bId = bData.booth?.boothId || `booth-${boothNumber}`;
+        const participant: Participant = {
+          name: pData.name || firstBoothData.participant?.name || '',
+          email: pData.email || cleanId,
+          role: pData.role || 'Summit Attendee',
+        };
 
-      boothResults[bId] = {
-        boothId: bId,
-        boothNumber,
-        boothTitle: bData.booth?.boothTitle || `Booth ${boothNumber}`,
-        topicId: bData.booth?.topicId,
-        topicTitle: bData.booth?.topicTitle || 'Standard Topic',
-        score: bData.quiz?.score ?? 0,
-        totalQuestions: bData.quiz?.totalQuestions ?? 0,
-        percentage: bData.quiz?.percentage ?? 0,
-        correctAnswers: bData.quiz?.correctAnswers ?? 0,
-        incorrectAnswers: bData.quiz?.incorrectAnswers ?? 0,
-        unansweredAnswers: bData.quiz?.unansweredAnswers ?? 0,
-        timeTakenSeconds: bData.quiz?.timeTakenSeconds ?? 0,
-        completedAt: bData.submission?.completedAt || bData.savedAt || new Date().toISOString(),
-        answers: bData.answers || [],
-      };
-    });
+        const boothResults: Record<string, BoothResult> = {};
 
-    return {
-      exists: true,
-      participant,
-      summary: data,
-      boothResults,
-    };
+        boothsSnap.forEach((boothDoc: any) => {
+          const b = boothDoc.data();
+          const boothNumber = b.boothNumber || b.booth?.boothNumber || Number(boothDoc.id.match(/\d+/)?.[0]) || 1;
+          const boothId = b.boothId || b.booth?.boothId || `booth-${boothNumber}`;
+          const score = b.score ?? b.quiz?.score ?? 0;
+          const totalQuestions = b.totalQuestions ?? b.quiz?.totalQuestions ?? 0;
+          const percentage = b.percentage ?? b.quiz?.percentage ?? (totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0);
+          const timeTakenSeconds = b.timeTakenSeconds ?? b.quiz?.timeTakenSeconds ?? 0;
+
+          boothResults[boothId] = {
+            boothId,
+            boothNumber,
+            boothTitle: b.boothTitle || b.booth?.boothTitle || `Booth ${boothNumber}`,
+            topicId: b.topicId || b.booth?.topicId,
+            topicTitle: b.topicTitle || b.booth?.topicTitle || b.boothTitle || `Booth ${boothNumber}`,
+            score,
+            totalQuestions,
+            percentage,
+            correctAnswers: b.correctAnswers ?? score,
+            incorrectAnswers: b.incorrectAnswers ?? Math.max(0, totalQuestions - score),
+            unansweredAnswers: b.unansweredAnswers ?? 0,
+            timeTakenSeconds,
+            completedAt: b.completedAt || b.submission?.completedAt || b.savedAt || new Date().toISOString(),
+            answers: b.answers || [],
+          };
+        });
+
+        return {
+          exists: true,
+          participant,
+          summary: pData.summary || {},
+          boothResults,
+        };
+      }
+    }
+
+    return { exists: false };
   } catch (err: any) {
     console.warn(`[Firestore] Error fetching participant ${cleanId}:`, err);
     return { exists: false, error: err.message };
@@ -242,36 +278,60 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
 /**
  * Fetches all participants from Firestore for admin analytics & dashboard sync
  */
-export async function fetchAllParticipants(): Promise<any[]> {
+export async function fetchAllParticipants(): Promise<Record<string, unknown>[]> {
   try {
-    const participantsCol = collection(db, 'participants');
-    const snap = await getDocs(participantsCol);
-    const list: any[] = [];
-    snap.forEach((d: any) => {
-      list.push(d.data());
+    const [participantsSnap, boothsSnap] = await Promise.all([
+      getDocs(collection(db, 'participants')),
+      getDocs(collectionGroup(db, 'booths')),
+    ]);
+    const participants = new Map<string, Record<string, unknown>>();
+    participantsSnap.forEach((participantDoc: any) => {
+      const participant = participantDoc.data();
+      const email = String(participant.email || participantDoc.id).trim().toLowerCase();
+      if (email) participants.set(email, participant);
     });
-    return list;
+    boothsSnap.forEach((boothDoc: any) => {
+      const data = boothDoc.data();
+      const participant = data.participant || {};
+      const email = String(participant.email || '').trim().toLowerCase();
+      if (email && !participants.has(email)) {
+        participants.set(email, participant as Record<string, unknown>);
+      }
+    });
+    return [...participants.values()];
   } catch (err) {
     console.warn('[Firestore] Error fetching all participants:', err);
-    return [];
+    throw err;
   }
 }
 
 /**
  * Fetches all submissions from Firestore for admin analytics & dashboard sync
  */
-export async function fetchAllSubmissions(): Promise<any[]> {
+export async function fetchAllSubmissions(): Promise<Record<string, unknown>[]> {
   try {
-    const subsCol = collection(db, 'submissions');
-    const snap = await getDocs(subsCol);
-    const list: any[] = [];
-    snap.forEach((d: any) => {
-      list.push(d.data());
+    const [boothResultsSnap, legacySubmissionsSnap] = await Promise.all([
+      getDocs(collectionGroup(db, 'booths')),
+      getDocs(collection(db, 'submissions')),
+    ]);
+    const submissions = new Map<string, Record<string, unknown>>();
+
+    // Older versions wrote the same attempt into both collections. Deduplicate
+    // those while including booth-only records written by the current schema.
+    boothResultsSnap.forEach((submissionDoc: any) => {
+      const data = submissionDoc.data();
+      const id = data.submission?.submissionId || submissionDoc.ref.path;
+      submissions.set(id, data);
     });
-    return list;
+    legacySubmissionsSnap.forEach((submissionDoc: any) => {
+      const data = submissionDoc.data();
+      const id = data.submission?.submissionId || submissionDoc.id;
+      submissions.set(id, data);
+    });
+
+    return [...submissions.values()];
   } catch (err) {
     console.warn('[Firestore] Error fetching all submissions:', err);
-    return [];
+    throw err;
   }
 }
-

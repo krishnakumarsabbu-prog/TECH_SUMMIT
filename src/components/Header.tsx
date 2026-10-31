@@ -1,9 +1,11 @@
+import { TicketIcon, TrophyIcon, CloseIcon } from './Icons';
+import { AppStickyHeader } from './AppStickyHeader';
+
 interface HeaderProps {
   completedCount?: number;
   isWinner?: boolean;
   onOpenPassport?: () => void;
   isPassportActive?: boolean;
-  onGoHome?: () => void;
 }
 
 export function Header({
@@ -11,57 +13,44 @@ export function Header({
   isWinner = false,
   onOpenPassport,
   isPassportActive = false,
-  onGoHome,
 }: HeaderProps) {
   return (
-    <header className="ts-header" role="banner">
-      <div className="ts-header__inner">
-        <div
-          className="ts-header__brand"
-          onClick={onGoHome}
-          style={onGoHome ? { cursor: 'pointer' } : undefined}
-          title={onGoHome ? 'Go to Innovation Showcase 2026 landing page' : undefined}
-        >
-          <span className="ts-header__accent" aria-hidden="true" />
-          <div className="ts-header__copy">
-            <span className="ts-header__company">WELLSFARGO</span>
-            <span className="ts-header__title">
-              Innovation Showcase <strong>- 2026</strong>
+    <AppStickyHeader
+      subtitle="Innovation Showcase 2026"
+      rightAction={
+        onOpenPassport ? (
+          <button
+            type="button"
+            className="app-tag-pill"
+            onClick={onOpenPassport}
+            title="View your challenge passport and booth progress"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '999px',
+              background: isWinner ? 'var(--app-success-light)' : 'var(--app-primary-light)',
+              border: `1px solid ${isWinner ? 'var(--app-success)' : 'rgba(37, 99, 235, 0.25)'}`,
+              color: isWinner ? 'var(--app-success)' : 'var(--app-primary)',
+              fontWeight: 700,
+              fontSize: '12px',
+              cursor: 'pointer',
+            }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {isPassportActive ? <CloseIcon size={14} /> : isWinner ? <TrophyIcon size={14} /> : <TicketIcon size={14} />}
             </span>
-          </div>
-        </div>
-
-        <div className="ts-header__right">
-          <span className="ts-header__tagline">
-            INNOVATE <i aria-hidden="true" /> ADOPT <i aria-hidden="true" /> REUSE
-          </span>
-
-          {onOpenPassport && (
-            <button
-              type="button"
-              className={`ts-header__passport-btn ${isWinner ? 'ts-header__passport-btn--winner' : ''}`}
-              onClick={onOpenPassport}
-              title="View your challenge passport and booth progress"
-            >
-              <span className="ts-header__passport-icon">{isWinner ? '🏆' : '🏅'}</span>
-              <span className="ts-header__passport-text ts-header__passport-text--full">
-                {isPassportActive
-                  ? 'Close Passport'
-                  : isWinner
-                  ? `Winner (${completedCount}/9)`
-                  : `Passport (${completedCount}/4)`}
-              </span>
-              <span className="ts-header__passport-text ts-header__passport-text--compact">
-                {isPassportActive
-                  ? 'Close'
-                  : isWinner
-                  ? `Winner (${completedCount})`
-                  : `${completedCount}/4`}
-              </span>
-            </button>
-          )}
-        </div>
-      </div>
-    </header>
+            <span>
+              {isPassportActive
+                ? 'Close'
+                : isWinner
+                ? `Winner (${completedCount}/9)`
+                : `Passport (${completedCount}/4)`}
+            </span>
+          </button>
+        ) : undefined
+      }
+    />
   );
 }

@@ -1,0 +1,670 @@
+/**
+ * PREMIUM MOBILE QUIZ & MINI-GAME DESIGN SYSTEM
+ * Reference: Mobile-first 390x844, max 480px centered.
+ * Fonts: Space Grotesk 700 (Display), Inter 400/600/700 (Body), JetBrains Mono 500 (Code)
+ */
+
+/* ==========================================================================
+   CSS VARIABLES & COLOR SYSTEM (Dark & Light)
+   ========================================================================== */
+:root {
+  /* DARK THEME (Default) */
+  --color-bg: #0B1020;
+  --color-surface: #151C33;
+  --color-border: #2A3558;
+  --color-text: #F2F4FA;
+  --color-muted: #A9B2CF;
+  --color-accent: #FF8A5B;
+  --color-accent-text: #1A0B05;
+  --color-code-panel: #0E1427;
+  --color-selected-row: #3A1E22;
+  --color-success: #5EE1A8;
+  --color-success-bg: rgba(94, 225, 168, 0.14);
+  --color-danger: #EF4444;
+  --color-danger-bg: rgba(239, 68, 68, 0.16);
+  --color-heart: #FF5353;
+  --card-shadow: none;
+
+  /* Typography */
+  --font-display: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* LIGHT THEME */
+[data-theme="light"] {
+  --color-bg: #F4F6FB;
+  --color-surface: #FFFFFF;
+  --color-border: #D5DAEA;
+  --color-text: #121526;
+  --color-muted: #4A5270;
+  --color-accent: #C2410C;
+  --color-accent-text: #FFFFFF;
+  --color-code-panel: #EEF1F8;
+  --color-selected-row: #FDE6DC;
+  --color-success: #0F7B4F;
+  --color-success-bg: rgba(15, 123, 79, 0.12);
+  --color-danger: #DC2626;
+  --color-danger-bg: rgba(220, 38, 38, 0.12);
+  --color-heart: #DC2626;
+  --card-shadow: 0 4px 20px rgba(18, 21, 38, 0.08);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-bg: #F4F6FB;
+    --color-surface: #FFFFFF;
+    --color-border: #D5DAEA;
+    --color-text: #121526;
+    --color-muted: #4A5270;
+    --color-accent: #C2410C;
+    --color-accent-text: #FFFFFF;
+    --color-code-panel: #EEF1F8;
+    --color-selected-row: #FDE6DC;
+    --color-success: #0F7B4F;
+    --color-success-bg: rgba(15, 123, 79, 0.12);
+    --color-danger: #DC2626;
+    --color-danger-bg: rgba(220, 38, 38, 0.12);
+    --color-heart: #DC2626;
+    --card-shadow: 0 4px 20px rgba(18, 21, 38, 0.08);
+  }
+}
+
+/* ==========================================================================
+   PAGE CONTAINER & MOBILE FRAME (390x844 base, max 480px)
+   ========================================================================== */
+.pq-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: max(env(safe-area-inset-top, 0px), 20px) 16px max(env(safe-area-inset-bottom, 0px), 24px);
+  gap: 16px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  box-sizing: border-box;
+  position: relative;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================================================================
+   1. HEADER ROW
+   ========================================================================== */
+.pq-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.pq-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pq-booth-eyebrow {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  line-height: 1.2;
+}
+
+.pq-challenge-counter {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-muted);
+  line-height: 1.2;
+}
+
+.pq-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pq-theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pq-theme-btn:hover {
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+.pq-timer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.pq-timer-pill svg {
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.pq-timer-pill--urgent {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  animation: pq-timer-pulse 1s infinite alternate ease-in-out;
+}
+
+.pq-timer-pill--urgent svg {
+  color: var(--color-danger);
+}
+
+@keyframes pq-timer-pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); }
+}
+
+/* ==========================================================================
+   2. PROGRESS BAR (5 Segments, 6px high, 3px radius, 6px gap)
+   ========================================================================== */
+.pq-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.pq-progress-segment {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-border);
+  flex: 1;
+  transition: background-color 0.3s ease;
+}
+
+.pq-progress-segment--active {
+  background: var(--color-accent);
+}
+
+/* ==========================================================================
+   3. QUESTION CARD
+   ========================================================================== */
+.pq-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: clamp(16px, 4vw, 24px);
+  box-shadow: var(--card-shadow);
+  flex: 1;
+  box-sizing: border-box;
+  animation: pq-slide-fade 0.25s ease-out;
+}
+
+@keyframes pq-slide-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pq-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.pq-card-eyebrow {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+}
+
+.pq-hearts-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pq-heart-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-heart);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.pq-heart-icon--lost {
+  color: var(--color-muted);
+  opacity: 0.45;
+}
+
+.pq-card-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-text);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.pq-card-instruction {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+/* ==========================================================================
+   CODE REVIEW PANEL
+   ========================================================================== */
+.pq-code-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--color-code-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.pq-code-line-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-code);
+  font-size: clamp(12.5px, 3.2vw, 14px);
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.pq-code-line-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pq-code-line-btn:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.pq-line-gutter {
+  color: var(--color-muted);
+  min-width: 14px;
+  font-weight: 500;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.pq-line-content {
+  flex: 1;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.pq-line-icon {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Selected State */
+.pq-code-line-btn--selected {
+  background: var(--color-selected-row) !important;
+  border-color: var(--color-accent) !important;
+}
+
+/* Success / Defused State */
+.pq-code-line-btn--correct {
+  background: var(--color-success-bg) !important;
+  border-color: var(--color-success) !important;
+}
+
+.pq-code-line-btn--correct .pq-line-icon {
+  color: var(--color-success);
+}
+
+/* Wrong / Failed State */
+.pq-code-line-btn--wrong {
+  background: var(--color-danger-bg) !important;
+  border-color: var(--color-danger) !important;
+  animation: pq-shake 0.2s ease-in-out;
+}
+
+.pq-code-line-btn--wrong .pq-line-icon {
+  color: var(--color-danger);
+}
+
+@keyframes pq-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ==========================================================================
+   MCQ OPTIONS (4 Full-width buttons, 56px min-height, 14px 16px padding)
+   ========================================================================== */
+.pq-mcq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pq-mcq-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-code-panel);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.pq-mcq-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.pq-mcq-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pq-mcq-text {
+  flex: 1;
+  word-break: break-word;
+}
+
+.pq-mcq-btn--selected {
+  background: var(--color-selected-row) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.pq-mcq-btn--selected .pq-mcq-badge {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+.pq-mcq-btn--correct {
+  background: var(--color-success-bg) !important;
+  border-color: var(--color-success) !important;
+}
+
+.pq-mcq-btn--correct .pq-mcq-badge {
+  background: var(--color-success);
+  color: #072617;
+  border-color: var(--color-success);
+}
+
+.pq-mcq-btn--wrong {
+  background: var(--color-danger-bg) !important;
+  border-color: var(--color-danger) !important;
+  animation: pq-shake 0.2s ease-in-out;
+}
+
+.pq-mcq-btn--wrong .pq-mcq-badge {
+  background: var(--color-danger);
+  color: #FFFFFF;
+  border-color: var(--color-danger);
+}
+
+/* ==========================================================================
+   FEEDBACK CARD (Below code panel, 16px gap)
+   ========================================================================== */
+.pq-feedback-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-code-panel);
+  animation: pq-slide-fade 0.2s ease-out;
+}
+
+.pq-feedback-card--correct {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.pq-feedback-card--wrong {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.pq-feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pq-feedback-title {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.pq-feedback-card--correct .pq-feedback-title {
+  color: var(--color-success);
+}
+
+.pq-feedback-card--wrong .pq-feedback-title {
+  color: var(--color-danger);
+}
+
+.pq-feedback-desc {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.pq-spacer {
+  flex: 1;
+}
+
+/* ==========================================================================
+   5. ACTION BAR (Sticky bottom, 12px gap, 52px buttons)
+   ========================================================================== */
+.pq-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.pq-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  user-select: none;
+}
+
+.pq-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.pq-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pq-btn--secondary {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.pq-btn--secondary:hover:not(:disabled) {
+  border-color: var(--color-muted);
+}
+
+.pq-btn--primary {
+  flex: 2;
+  background: var(--color-accent);
+  border: none;
+  color: var(--color-accent-text);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   FINAL SCORE SCREEN
+   ========================================================================== */
+.pq-final-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: var(--card-shadow);
+  flex: 1;
+}
+
+.pq-final-trophy {
+  width: 56px;
+  height: 56px;
+  color: var(--color-accent);
+}
+
+.pq-final-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.pq-final-subtitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.pq-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.pq-stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--color-code-panel);
+  border: 1px solid var(--color-border);
+}
+
+.pq-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.pq-stat-value {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pq-card,
+  .pq-code-line-btn--wrong,
+  .pq-mcq-btn--wrong,
+  .pq-timer-pill--urgent {
+    animation: none !important;
+  }
+}

@@ -1,4 +1,4 @@
-import type { Participant, QuizState, QuizResult, BoothResult } from '../types';
+import type { Participant, QuizState, QuizResult, BoothResult, Submission } from '../types';
 import { REQUIRED_BOOTHS_TO_WIN } from '../data/boothsConfig';
 
 export const KEYS = {
@@ -32,12 +32,13 @@ function safeGet(key: string): string | null {
   }
 }
 
-function safeSet(key: string, value: string): void {
-  if (!available) return;
+function safeSet(key: string, value: string): boolean {
+  if (!available) return false;
   try {
     localStorage.setItem(key, value);
+    return true;
   } catch {
-    // ignore quota errors
+    return false;
   }
 }
 
@@ -73,9 +74,15 @@ export function getParticipant(): Participant | null {
   }
 }
 
+function getParticipantStorageKey(baseKey: string, email?: string): string {
+  const normalizedEmail = (email || getParticipant()?.email || '').trim().toLowerCase();
+  return normalizedEmail ? `${baseKey}:${encodeURIComponent(normalizedEmail)}` : baseKey;
+}
+
 // Multi-booth storage methods
-export function getBoothResults(): Record<string, BoothResult> {
-  const raw = safeGet(KEYS.BOOTH_RESULTS);
+export function getBoothResults(email?: string): Record<string, BoothResult> {
+  const scopedKey = getParticipantStorageKey(KEYS.BOOTH_RESULTS, email);
+  const raw = safeGet(scopedKey);
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw);
@@ -85,16 +92,26 @@ export function getBoothResults(): Record<string, BoothResult> {
   }
 }
 
-export function saveBoothResult(result: BoothResult): void {
-  const all = getBoothResults();
-  all[result.boothId] = result;
-  safeSet(KEYS.BOOTH_RESULTS, JSON.stringify(all));
+export function migrateLegacyBoothResults(email: string): void {
+  const scopedKey = getParticipantStorageKey(KEYS.BOOTH_RESULTS, email);
+  if (safeGet(scopedKey)) return;
+
+  const legacyRaw = safeGet(KEYS.BOOTH_RESULTS);
+  if (legacyRaw && safeSet(scopedKey, legacyRaw)) {
+    safeRemove(KEYS.BOOTH_RESULTS);
+  }
 }
 
-export function saveAllBoothResults(all: Record<string, BoothResult>): void {
-  const existing = getBoothResults();
+export function saveBoothResult(result: BoothResult, email?: string): boolean {
+  const all = getBoothResults(email);
+  all[result.boothId] = result;
+  return safeSet(getParticipantStorageKey(KEYS.BOOTH_RESULTS, email), JSON.stringify(all));
+}
+
+export function saveAllBoothResults(all: Record<string, BoothResult>, email?: string): boolean {
+  const existing = getBoothResults(email);
   const merged = { ...existing, ...all };
-  safeSet(KEYS.BOOTH_RESULTS, JSON.stringify(merged));
+  return safeSet(getParticipantStorageKey(KEYS.BOOTH_RESULTS, email), JSON.stringify(merged));
 }
 
 export function getBoothResult(boothId: string): BoothResult | null {
@@ -156,7 +173,10 @@ export function getQuizState(): QuizState | null {
       !Array.isArray(parsed.questions) ||
       !Array.isArray(parsed.answers) ||
       typeof parsed.startTime !== 'number' ||
-      !parsed.boothId
+      !parsed.boothId ||
+      typeof parsed.participantEmail !== 'string' ||
+      !parsed.participantEmail.trim() ||
+      typeof parsed.submitted !== 'boolean'
     ) {
       return null;
     }
@@ -171,18 +191,26 @@ export function clearQuizState(): void {
 }
 
 export function resetAll(): void {
+  const participantEmail = getParticipant()?.email;
   safeRemove(KEYS.PARTICIPANT);
   safeRemove(KEYS.PLAYED);
   safeRemove(KEYS.RESULT);
   safeRemove(KEYS.QUIZ_STATE);
-  safeRemove(KEYS.BOOTH_RESULTS);
+  safeRemove(getParticipantStorageKey(KEYS.BOOTH_RESULTS, participantEmail));
+  clearAllSubmissions(participantEmail);
+  safeRemove(SUBMISSIONS_KEY);
+  safeRemove(PENDING_SUBMISSIONS_KEY);
 }
 
 const SUBMISSIONS_KEY = 'technology-summit-all-submissions';
+const PENDING_SUBMISSIONS_KEY = 'technology-summit-pending-submissions';
 
-export function saveSubmissionRecord(submission: any): void {
-  const existingRaw = safeGet(SUBMISSIONS_KEY);
-  let list: any[] = [];
+export function saveSubmissionRecord(submission: Submission): boolean {
+  const email = submission.participant.email;
+  const submissionsKey = getParticipantStorageKey(SUBMISSIONS_KEY, email);
+  const pendingKey = getParticipantStorageKey(PENDING_SUBMISSIONS_KEY, email);
+  const existingRaw = safeGet(submissionsKey);
+  let list: Submission[] = [];
   if (existingRaw) {
     try {
       list = JSON.parse(existingRaw);
@@ -191,23 +219,62 @@ export function saveSubmissionRecord(submission: any): void {
       list = [];
     }
   }
-  list.push(submission);
-  safeSet(SUBMISSIONS_KEY, JSON.stringify(list));
+  const submissionId = submission.submission.submissionId;
+  if (!list.some((saved) => saved.submission.submissionId === submissionId)) {
+    list.push(submission);
+  }
+
+  const pendingRaw = safeGet(pendingKey);
+  let pending: Submission[] = [];
+  if (pendingRaw) {
+    try {
+      const parsed = JSON.parse(pendingRaw);
+      if (Array.isArray(parsed)) pending = parsed as Submission[];
+    } catch {
+      pending = [];
+    }
+  }
+  if (!pending.some((saved) => saved.submission.submissionId === submissionId)) {
+    pending.push(submission);
+  }
+
+  const savedArchive = safeSet(submissionsKey, JSON.stringify(list));
+  const savedPending = safeSet(pendingKey, JSON.stringify(pending));
+  return savedArchive && savedPending;
 }
 
-export function getAllSubmissions(): any[] {
-  const existingRaw = safeGet(SUBMISSIONS_KEY);
+export function getAllSubmissions(email?: string): Submission[] {
+  const existingRaw = safeGet(getParticipantStorageKey(SUBMISSIONS_KEY, email));
   if (!existingRaw) return [];
   try {
     const parsed = JSON.parse(existingRaw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed as Submission[] : [];
   } catch {
     return [];
   }
 }
 
-export function clearAllSubmissions(): void {
-  safeRemove(SUBMISSIONS_KEY);
+export function getPendingSubmissions(email?: string): Submission[] {
+  const pendingRaw = safeGet(getParticipantStorageKey(PENDING_SUBMISSIONS_KEY, email));
+  if (!pendingRaw) return [];
+  try {
+    const parsed = JSON.parse(pendingRaw);
+    return Array.isArray(parsed) ? parsed as Submission[] : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markSubmissionSynced(submission: Submission): boolean {
+  const pendingKey = getParticipantStorageKey(PENDING_SUBMISSIONS_KEY, submission.participant.email);
+  const pending = getPendingSubmissions(submission.participant.email)
+    .filter((saved) => saved.submission.submissionId !== submission.submission.submissionId);
+  return safeSet(pendingKey, JSON.stringify(pending));
+}
+
+export function clearAllSubmissions(email?: string): void {
+  safeRemove(getParticipantStorageKey(SUBMISSIONS_KEY, email));
+  safeRemove(getParticipantStorageKey(PENDING_SUBMISSIONS_KEY, email));
 }
 
 export function isTestMode(): boolean {

@@ -4,16 +4,16 @@ import type {
   QuizState,
   QuizResult,
   Submission,
-  BoothResult,
 } from '../types';
 import { collectDeviceMetadata } from '../utils/deviceFingerprint';
 import { generateParticipationKey } from '../utils/participation';
 import { buildSubmission, validateSubmission } from '../utils/submission';
-import { saveSubmissionRecord } from '../utils/storage';
 import {
-  registerParticipantInFirestore,
-  saveBoothResultInFirestore,
-} from './firebaseService';
+  getPendingSubmissions,
+  markSubmissionSynced,
+  saveSubmissionRecord,
+} from '../utils/storage';
+import { saveBoothResultInFirestore } from './firebaseService';
 
 export async function generateSubmission(
   participant: Participant,
@@ -37,41 +37,51 @@ export async function generateSubmission(
 }
 
 /**
- * Registers participant solely in Firebase Firestore database
- */
-export async function registerParticipant(participant: Participant): Promise<{ success: boolean; error?: string }> {
-  try {
-    const res = await registerParticipantInFirestore(participant);
-    if (res.success) {
-      console.log(`[Registration] ✓ Registered participant ${participant.entId} in Firebase Firestore.`);
-    } else {
-      console.warn(`[Registration] Firebase Firestore returned error:`, res.error);
-    }
-    return res;
-  } catch (e: any) {
-    console.warn('[Registration] Firebase Firestore error:', e);
-    return { success: false, error: e?.message || 'Unknown error' };
-  }
-}
-
-/**
  * Syncs submission results solely to Firebase Firestore database
  */
-async function syncSubmission(
-  submission: Submission,
-  allBoothResults: Record<string, BoothResult>
-): Promise<boolean> {
-  try {
-    const res = await saveBoothResultInFirestore(submission.participant, submission, allBoothResults);
-    if (res.success) {
-      console.log(`[Submission] ✓ Saved booth ${submission.booth?.boothNumber} result in Firebase for ${submission.participant.entId}`);
-      return true;
+const inFlightSyncs = new Map<string, Promise<boolean>>();
+
+function syncSubmission(submission: Submission): Promise<boolean> {
+  const syncKey = `${submission.participant.email.toLowerCase()}:${submission.submission.submissionId}`;
+  const existingSync = inFlightSyncs.get(syncKey);
+  if (existingSync) return existingSync;
+
+  const sync = (async () => {
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const res = await saveBoothResultInFirestore(submission.participant, submission);
+        if (res.success) {
+          markSubmissionSynced(submission);
+          console.log(`[Submission] ✓ Saved booth ${submission.booth?.boothNumber} result in Firebase for ${submission.participant.email} (attempt ${attempt})`);
+          return true;
+        }
+        console.warn(`[Submission] Firebase attempt ${attempt} failed:`, res.error);
+      } catch (e) {
+        console.warn(`[Submission] Firebase attempt ${attempt} error:`, e);
+      }
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 800ms, 1600ms
+        await new Promise((resolve) => setTimeout(resolve, attempt * 800));
+      }
     }
-    console.warn('[Submission] Failed to save result in Firebase:', res.error);
+
+    console.warn(`[Submission] Firebase sync unsuccessful after ${maxRetries} attempts; safely retained in device queue.`);
     return false;
-  } catch (e) {
-    console.warn('[Submission] Firebase Firestore error:', e);
-    return false;
+  })();
+
+  inFlightSyncs.set(syncKey, sync);
+  void sync.then(() => {
+    if (inFlightSyncs.get(syncKey) === sync) inFlightSyncs.delete(syncKey);
+  });
+  return sync;
+}
+
+export async function retryPendingSubmissions(email: string): Promise<void> {
+  const pending = getPendingSubmissions(email);
+  for (const submission of pending) {
+    await syncSubmission(submission);
   }
 }
 
@@ -80,18 +90,22 @@ export async function submitResult(
   quizState: QuizState,
   result: QuizResult,
   boothsCompletedSoFar: number = 1,
-  allBoothResults?: Record<string, BoothResult>,
+  onSyncStatus?: (status: 'local-save-failed' | 'sync-pending' | 'synced' | 'sync-failed') => void,
 ): Promise<Submission> {
   // 1. Generate standard submission schema
   const submission = await generateSubmission(participant, quizState, result, boothsCompletedSoFar);
 
-  // 2. Persist in local storage
+  // 2. Persist in local storage immediately so score is never lost
   saveSubmissionRecord(submission);
 
-  // 3. Push to Firebase Firestore
-  syncSubmission(submission, allBoothResults || {}).catch((err) => {
+  // 3. Hold on until record is saved to Firebase (with 3 automatic retries)
+  try {
+    const synced = await syncSubmission(submission);
+    onSyncStatus?.(synced ? 'synced' : 'sync-failed');
+  } catch (err) {
     console.warn('[Submission] Background sync error:', err);
-  });
+    onSyncStatus?.('sync-failed');
+  }
 
   return submission;
 }

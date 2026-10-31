@@ -125,3 +125,67 @@ export function playErrorSound(): void {
   }
 }
 
+function playTone(frequency: number, startTime: number, duration: number, volume: number, type: OscillatorType = 'sine'): void {
+  const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextClass) return;
+  const ctx = new AudioContextClass();
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, ctx.currentTime + startTime);
+  gain.gain.setValueAtTime(0.001, ctx.currentTime + startTime);
+  gain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + startTime + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+  oscillator.start(ctx.currentTime + startTime);
+  oscillator.stop(ctx.currentTime + startTime + duration + 0.02);
+}
+
+export function playAnswerSound(): void {
+  try {
+    playTone(520, 0, 0.1, 0.055);
+    playTone(780, 0.06, 0.13, 0.04);
+  } catch {
+    // Audio is optional and may be blocked by the browser.
+  }
+}
+
+export function playCelebrationSound(): void {
+  try {
+    [523, 659, 784, 1047].forEach((frequency, index) => {
+      playTone(frequency, index * 0.12, 0.28, 0.08);
+    });
+  } catch {
+    // Audio is optional and may be blocked by the browser.
+  }
+}
+
+export function playZapSound(): void {
+  try {
+    playTone(900, 0, 0.08, 0.08, 'sawtooth');
+    playTone(450, 0.04, 0.1, 0.06, 'sawtooth');
+  } catch {
+    // Ignore safely
+  }
+}
+
+export function playSuccessChime(): void {
+  try {
+    playTone(587.33, 0, 0.12, 0.08); // D5
+    playTone(880, 0.08, 0.25, 0.1);   // A5
+  } catch {
+    // Ignore safely
+  }
+}
+
+export function playFailBuzz(): void {
+  try {
+    playTone(220, 0, 0.2, 0.1, 'square');
+    playTone(164.8, 0.1, 0.25, 0.09, 'square');
+  } catch {
+    // Ignore safely
+  }
+}
+
+

@@ -1,14 +1,6 @@
 import type { BoothConfig, BoothTopic, QuizQuestion } from '../types';
 
-import booth1Questions from './booth-1.json';
-import booth2Questions from './booth-2.json';
-import booth3Questions from './booth-3.json';
-import booth4Questions from './booth-4.json';
-import booth5Questions from './booth-5.json';
-import booth6Questions from './booth-6.json';
-import booth7Questions from './booth-7.json';
-import booth8Questions from './booth-8.json';
-import booth9Questions from './booth-9.json';
+
 
 // Dynamically discover all topic JSON files across all booth subfolders
 // Matches patterns like ./booth-1/topics/topic-1/questions.json or any nested json files
@@ -87,102 +79,94 @@ export function getTopicsForBooth(boothId: string): BoothTopic[] {
   return allDiscoveredTopics[boothId.toLowerCase()] || [];
 }
 
+import { getRichQuestionsForBooth } from '../utils/questionEngine';
+
 const BOOTH_DEFINITIONS = [
   {
     id: 'booth-1',
     number: 1,
-    title: 'Generative AI & LLMs',
-    category: 'Artificial Intelligence',
-    icon: '🤖',
-    badge: 'AI & LLM',
-    description: 'Explore neural architectures, prompt engineering, RAG, and frontier models.',
-    fallbackQuestions: booth1Questions as QuizQuestion[],
+    title: 'Data Governance, Lineage & Zero Trust',
+    category: 'Data & Security',
+    icon: '🛡️',
+    badge: 'Data & Security',
+    description: 'Trusted enterprise data, lineage, governance, Zero Trust, vulnerability intelligence, and secure coding.',
   },
   {
     id: 'booth-2',
     number: 2,
-    title: 'Cloud Native & Kubernetes',
-    category: 'Cloud Infrastructure',
-    icon: '☁️',
-    badge: 'Cloud & K8s',
-    description: 'Master microservices orchestration, auto-scaling, serverless, and mesh topologies.',
-    fallbackQuestions: booth2Questions as QuizQuestion[],
+    title: 'Autonomous Agents & Digital Identity',
+    category: 'Frontier Technologies',
+    icon: '🤖',
+    badge: 'Agentic AI',
+    description: 'Autonomous AI agents, agent evaluation, digital identity, decentralized protocols, and agent-enabled applications.',
   },
   {
     id: 'booth-3',
     number: 3,
-    title: 'Cybersecurity & Zero Trust',
-    category: 'Information Security',
-    icon: '🛡️',
-    badge: 'Security',
-    description: 'Verify every request, defend supply chains, and master cryptographic principles.',
-    fallbackQuestions: booth3Questions as QuizQuestion[],
+    title: 'AI-Powered Software Engineering & Developer Productivity',
+    category: 'Software Engineering',
+    icon: '⚡',
+    badge: 'Productivity',
+    description: 'Agentic SDLC workflows, Prompt-to-Production, test automation, modernization accelerators, and quality intelligence.',
   },
   {
     id: 'booth-4',
     number: 4,
-    title: 'Data Engineering & Lakehouse',
-    category: 'Data & Analytics',
-    icon: '📊',
-    badge: 'Data & Analytics',
-    description: 'Tackle real-time streaming, vector stores, ACID transactions, and ELT pipelines.',
-    fallbackQuestions: booth4Questions as QuizQuestion[],
+    title: 'Cloud Modernization & Data Platforms',
+    category: 'Cloud & Architecture',
+    icon: '☁️',
+    badge: 'Cloud Modernization',
+    description: 'Cloud onboarding, modern data pipelines, migration accelerators, and legacy-to-cloud architecture conversion.',
   },
   {
     id: 'booth-5',
     number: 5,
-    title: 'DevOps, SRE & CI/CD',
-    category: 'DevOps & Reliability',
-    icon: '⚙️',
-    badge: 'DevOps & SRE',
-    description: 'Accelerate continuous delivery, observability pillars, and error budget management.',
-    fallbackQuestions: booth5Questions as QuizQuestion[],
+    title: 'Enterprise AI Platform & Intelligent AI Operations',
+    category: 'Enterprise AI Platform',
+    icon: '🧠',
+    badge: 'AI Platforms & Ops',
+    description: 'Model routing, AutoML, agent building, model security, intelligent alerting, FinOps, and scalable model operations.',
   },
   {
     id: 'booth-6',
     number: 6,
-    title: 'Software Architecture & APIs',
-    category: 'System Design',
-    icon: '🏛️',
-    badge: 'Architecture',
-    description: 'Design decoupled event-driven systems, resilient gateways, and scalable patterns.',
-    fallbackQuestions: booth6Questions as QuizQuestion[],
+    title: 'AI Business Intelligence & Process Automation',
+    category: 'Business Solutions',
+    icon: '📈',
+    badge: 'Business Automation',
+    description: 'AI teammates, marketing intelligence, data agents, RAG, automated document generation, and fraud analytics.',
   },
   {
     id: 'booth-7',
     number: 7,
-    title: 'IoT & Edge Computing',
-    category: 'Edge & Connected Tech',
-    icon: '📡',
-    badge: 'IoT & Edge',
-    description: 'Harness low-latency computation, digital twins, and lightweight protocols.',
-    fallbackQuestions: booth7Questions as QuizQuestion[],
+    title: 'Agentic Banking, Risk Intelligence & AI Teammates',
+    category: 'Risk & Banking',
+    icon: '🏦',
+    badge: 'Risk & Banking',
+    description: 'Claims automation, payment intelligence, adverse-news analysis, risk agents, and conversational banking teammates.',
   },
   {
     id: 'booth-8',
     number: 8,
-    title: 'Web3 & Distributed Ledgers',
-    category: 'Blockchain & Consensus',
-    icon: '🔗',
-    badge: 'Web3 & Blockchain',
-    description: 'Uncover smart contracts, decentralized state, rollups, and zero-knowledge proofs.',
-    fallbackQuestions: booth8Questions as QuizQuestion[],
+    title: 'Intelligent Enterprise Platforms & SRE Operations',
+    category: 'Enterprise Platforms',
+    icon: '🏗️',
+    badge: 'Enterprise Platforms',
+    description: 'Enterprise knowledge platforms, voice agents, digital workers, Service Desk automation, and SRE resilience.',
   },
   {
     id: 'booth-9',
     number: 9,
-    title: 'Quantum & Emerging Horizons',
-    category: 'Quantum Computing',
-    icon: '⚛️',
-    badge: 'Quantum & Frontiers',
-    description: 'Leap into superposition, entanglement, quantum speedups, and future horizons.',
-    fallbackQuestions: booth9Questions as QuizQuestion[],
+    title: 'AI-Accelerated Engineering, Automation & Quality',
+    category: 'CI/CD & Quality',
+    icon: '🚀',
+    badge: 'Engineering Automation',
+    description: 'Pipeline automation, migration agents, digital workers, continuous validation, and quality intelligence.',
   },
 ];
 
 export const BOOTHS: BoothConfig[] = BOOTH_DEFINITIONS.map((def) => {
-  const topics = getTopicsForBooth(def.id);
-  const questions = topics.length > 0 && topics[0].questions.length > 0 ? topics[0].questions : def.fallbackQuestions;
+  const questions = getRichQuestionsForBooth(def.id, 60);
   return {
     id: def.id,
     number: def.number,
@@ -191,12 +175,13 @@ export const BOOTHS: BoothConfig[] = BOOTH_DEFINITIONS.map((def) => {
     icon: def.icon,
     badge: def.badge,
     description: def.description,
-    topics,
+    topics: [],
     questions,
   };
 });
 
 export const REQUIRED_BOOTHS_TO_WIN = 4;
+export const MAX_BOOTHS_PER_PARTICIPANT = 4;
 export const TOTAL_BOOTHS = 9;
 
 export function getBoothById(idOrNumber: string | number | null | undefined): BoothConfig | null {

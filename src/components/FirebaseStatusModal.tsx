@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { testFirestoreConnection } from '../services/firebaseService';
 import { Button } from './Button';
+import { ServerIcon, CloseIcon, ZapIcon } from './Icons';
 
 interface FirebaseStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentEntId?: string;
+  currentParticipantEmail?: string;
 }
 
 export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
   isOpen,
   onClose,
-  currentEntId,
+  currentParticipantEmail,
 }) => {
   const [status, setStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [statusMsg, setStatusMsg] = useState('');
   const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -37,13 +48,13 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <div className="ts-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="ts-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="ts-modal-header">
           <div className="ts-modal-header__brand">
             <div className="ts-modal-header__icon-badge" aria-hidden="true">
-              🔥
+              <ServerIcon size={18} />
             </div>
             <div>
               <div className="ts-modal-eyebrow">DATABASE DIAGNOSTICS</div>
@@ -56,13 +67,13 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
             onClick={onClose}
             aria-label="Close dialog"
           >
-            ✕
+            <CloseIcon size={18} />
           </button>
         </div>
 
         <div className="ts-modal-body">
           <p className="ts-modal-desc">
-            All summit attendee registrations, quiz scores, and passport milestones are saved directly to Firebase Firestore collections.
+            Registration is saved as one participant document, and each completed booth is saved as one booth document. Registration and booth progress are also cached on this device.
           </p>
 
           <div className="ts-sync-destination-card">
@@ -74,15 +85,13 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
             <div className="ts-sync-dest-summary">
               <span className="ts-sync-summary-title">Active Firestore Collections:</span>
               <div className="ts-sync-chips">
-                <span className="ts-chip">📁 participants/{'{entId}'}</span>
-                <span className="ts-chip">📁 participants/{'{entId}'}/booths/{'{boothNum}'}</span>
-                <span className="ts-chip">📁 submissions/{'{submissionId}'}</span>
+                <span className="ts-chip">📁 participants/{'{email}'} + booths/{'{boothNum}'}</span>
               </div>
             </div>
 
-            {currentEntId && (
+            {currentParticipantEmail && (
               <div style={{ marginTop: '8px', fontSize: '12.5px', color: 'var(--success)' }}>
-                Active Session Document: <strong>participants/{currentEntId.toUpperCase()}</strong>
+                Active Passport Records: <strong>participants/{currentParticipantEmail.toLowerCase()}/booths/*</strong>
               </div>
             )}
           </div>
@@ -110,11 +119,19 @@ export const FirebaseStatusModal: React.FC<FirebaseStatusModalProps> = ({
               onClick={handleTestConnection}
               disabled={status === 'testing'}
             >
-              {status === 'testing' ? 'Pinging Firestore...' : '⚡ Test Connection'}
+              {status === 'testing' ? 'Pinging Firestore...' : (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <ZapIcon size={16} /> Test Connection
+                </span>
+              )}
             </Button>
           </div>
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 };

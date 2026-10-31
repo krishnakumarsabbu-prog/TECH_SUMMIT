@@ -1,5 +1,6 @@
 import type { BoothConfig, BoothTopic } from '../types';
 import { Button } from '../components/Button';
+import { getBoothIcon, ClockIcon } from '../components/Icons';
 
 interface TopicSelectionProps {
   booth: BoothConfig;
@@ -16,7 +17,7 @@ export function TopicSelection({ booth, onSelectTopic, onBack }: TopicSelectionP
         {/* Booth Header Pill */}
         <div className="ts-topics-header">
           <div className="ts-topics-badge">
-            <span className="ts-topics-badge__icon">{booth.icon}</span>
+            <span className="ts-topics-badge__icon">{getBoothIcon(booth.number, 18)}</span>
             <span className="ts-topics-badge__label">BOOTH {booth.number} • {booth.badge}</span>
           </div>
 
@@ -31,7 +32,7 @@ export function TopicSelection({ booth, onSelectTopic, onBack }: TopicSelectionP
 
         {/* 20-Minute Rotating Topics Notice */}
         <div className="ts-topics-rotation-banner">
-          <div className="ts-rotation-icon" aria-hidden="true">⏱️</div>
+          <div className="ts-rotation-icon" aria-hidden="true"><ClockIcon size={24} /></div>
           <div className="ts-rotation-content">
             <h2 className="ts-rotation-title">20-MINUTE ROTATING TOPICS</h2>
             <p className="ts-rotation-desc">
